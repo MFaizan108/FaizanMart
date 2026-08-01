@@ -1,0 +1,27 @@
+{% extends "accounts/base.html" %}
+{% block title %}Continue with Google{% endblock %}
+{% block content %}
+<h1>Continue with Google</h1>
+{% if google_client_id %}
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<div id="g_id_onload"
+     data-client_id="{{ google_client_id }}"
+     data-callback="onGoogleCredential">
+</div>
+<div class="g_id_signin" data-type="standard"></div>
+
+<form id="google-form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="id_token" id="id_token">
+</form>
+<script>
+    function onGoogleCredential(response) {
+        document.getElementById("id_token").value = response.credential;
+        document.getElementById("google-form").submit();
+    }
+</script>
+{% else %}
+<p>Google login is not configured yet. Set <code>GOOGLE_OAUTH_CLIENT_ID</code> in <code>.env</code>.</p>
+{% endif %}
+<p><a href="{% url 'accounts:login' %}">Back to log in</a></p>
+{% endblock %}

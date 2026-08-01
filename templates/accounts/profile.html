@@ -1,0 +1,29 @@
+{% extends "accounts/base.html" %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user_obj.get_short_name }}</h1>
+<p>Email: {{ user_obj.email }} {% if user_obj.is_email_verified %}(verified){% else %}(not verified){% endif %}</p>
+<p>Role: {{ user_obj.get_role_display }}</p>
+
+<h2>Two-factor authentication</h2>
+{% if two_factor_enabled %}
+<p>Enabled. <a href="{% url 'accounts:2fa-disable' %}">Disable</a></p>
+{% else %}
+<p>Disabled. <a href="{% url 'accounts:2fa-setup' %}">Enable</a></p>
+{% endif %}
+
+<h2>Active sessions</h2>
+<table>
+    <tr><th>IP</th><th>Device</th><th>Last seen</th><th></th></tr>
+    {% for session in sessions %}
+    <tr>
+        <td>{{ session.ip_address|default:"—" }}</td>
+        <td>{{ session.user_agent|truncatechars:30 }}</td>
+        <td>{{ session.last_seen_at }}</td>
+        <td><a href="{% url 'accounts:session-revoke' session.pk %}">Revoke</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><a href="{% url 'accounts:logout' %}">Log out</a></p>
+{% endblock %}

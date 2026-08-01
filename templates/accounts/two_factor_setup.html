@@ -1,0 +1,14 @@
+{% extends "accounts/base.html" %}
+{% block title %}Set up two-factor authentication{% endblock %}
+{% block content %}
+<h1>Set up two-factor authentication</h1>
+<p>Scan this in your authenticator app (Google Authenticator, Authy, ...), or enter the secret manually:</p>
+<img src="data:image/png;base64,{{ qr_base64 }}" alt="2FA QR code" width="200" height="200">
+<p><code>{{ secret }}</code></p>
+<p><small>{{ provisioning_uri }}</small></p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Confirm & enable</button>
+</form>
+{% endblock %}
