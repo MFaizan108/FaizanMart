@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts import services as accounts_services
+from apps.notifications import services as notification_services
 
 from .models import Store
 
@@ -35,6 +36,12 @@ def approve_store(store, admin_user):
     store.approved_by = admin_user
     store.rejection_reason = ""
     store.save(update_fields=["status", "approved_at", "approved_by", "rejection_reason"])
+    notification_services.notify(
+        store.owner,
+        title="Your store has been approved",
+        message=f"'{store.name}' is now live on FaizanMart.",
+        notification_type="vendor_approval",
+    )
     return store
 
 
@@ -44,6 +51,12 @@ def reject_store(store, admin_user, reason):
     store.approved_at = None
     store.approved_by = admin_user
     store.save(update_fields=["status", "rejection_reason", "approved_at", "approved_by"])
+    notification_services.notify(
+        store.owner,
+        title="Your store application was rejected",
+        message=reason,
+        notification_type="vendor_approval",
+    )
     return store
 
 
