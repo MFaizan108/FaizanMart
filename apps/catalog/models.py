@@ -103,7 +103,7 @@ class Product(TimeStampedModel):
     meta_title = models.CharField(max_length=200, blank=True)
     meta_description = models.TextField(blank=True)
 
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT, db_index=True)
 
     class Meta:
         ordering = ["-created_at"]

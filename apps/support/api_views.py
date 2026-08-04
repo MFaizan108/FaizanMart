@@ -1,10 +1,11 @@
+from django.db.models import Prefetch
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from . import services
-from .models import FAQ, Ticket
+from .models import FAQ, Ticket, TicketMessage
 from .serializers import (
     AddMessageSerializer,
     FAQSerializer,
@@ -24,7 +25,9 @@ class TicketViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "head", "options"]
 
     def get_queryset(self):
-        queryset = Ticket.objects.select_related("customer").prefetch_related("messages")
+        queryset = Ticket.objects.select_related("customer").prefetch_related(
+            Prefetch("messages", queryset=TicketMessage.objects.select_related("sender"))
+        )
         if _is_support_staff(self.request.user):
             return queryset
         return queryset.filter(customer=self.request.user)

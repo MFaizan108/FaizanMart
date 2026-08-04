@@ -71,6 +71,34 @@ class UserSession(TimeStampedModel):
         return f"Session({self.user.email}, active={self.is_active})"
 
 
+class Address(TimeStampedModel):
+    class AddressType(models.TextChoices):
+        SHIPPING = "shipping", "Shipping"
+        BILLING = "billing", "Billing"
+        BOTH = "both", "Shipping & Billing"
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
+    label = models.CharField(max_length=50, blank=True)
+    full_name = models.CharField(max_length=150)
+    phone_number = models.CharField(max_length=20)
+    address_line1 = models.CharField(max_length=255)
+    address_line2 = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=100)
+    address_type = models.CharField(max_length=10, choices=AddressType.choices, default=AddressType.BOTH)
+    is_default_shipping = models.BooleanField(default=False)
+    is_default_billing = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-is_default_shipping", "-created_at"]
+        indexes = [models.Index(fields=["user"])]
+
+    def __str__(self):
+        return f"{self.label or self.address_line1} ({self.user.email})"
+
+
 class LoginHistory(models.Model):
     class Method(models.TextChoices):
         PASSWORD = "password", "Password"

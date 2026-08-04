@@ -1,12 +1,16 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from apps.catalog.models import Category, Product
 from apps.inventory.models import Stock, Warehouse
 from apps.vendors.models import Store
 
-from .models import Cart, CartItem
+from .models import Cart
+from .tasks import cleanup_stale_guest_carts_task
 
 User = get_user_model()
 
@@ -96,7 +100,7 @@ class AuthenticatedCartTests(CartTestBase):
         )
         item_id = add_response.data["items"][0]["id"]
 
-        other = User.objects.create_user(
+        User.objects.create_user(
             email="other_customer@example.com", password="S0meStrongPass!", role=User.Role.CUSTOMER
         )
         self.client.credentials()
@@ -126,3 +130,20 @@ class CartMergeTests(CartTestBase):
     def test_merge_requires_authentication(self):
         response = self.client.post(reverse("cart_api:merge"), {"guest_token": "not-a-real-token"})
         self.assertEqual(response.status_code, 401)
+
+
+class CartCleanupTaskTests(CartTestBase):
+    def test_cleanup_deletes_only_stale_guest_carts(self):
+        stale_guest = Cart.objects.create()
+        fresh_guest = Cart.objects.create()
+        Cart.objects.filter(pk=stale_guest.pk).update(updated_at=timezone.now() - timedelta(days=30))
+
+        authenticated_cart, _ = Cart.objects.get_or_create(user=self.customer)
+        Cart.objects.filter(pk=authenticated_cart.pk).update(updated_at=timezone.now() - timedelta(days=30))
+
+        result = cleanup_stale_guest_carts_task(retention_days=14)
+
+        self.assertEqual(result["guest_carts_deleted"], 1)
+        self.assertFalse(Cart.objects.filter(pk=stale_guest.pk).exists())
+        self.assertTrue(Cart.objects.filter(pk=fresh_guest.pk).exists())
+        self.assertTrue(Cart.objects.filter(pk=authenticated_cart.pk).exists())  # never touched, even though stale

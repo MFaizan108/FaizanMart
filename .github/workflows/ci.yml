@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  SECRET_KEY: ci-secret-key-not-for-production
+  DEBUG: "False"
+  ALLOWED_HOSTS: localhost,127.0.0.1
+  DATABASE_URL: postgres://faizanmart:faizanmart@localhost:5432/faizanmart
+  POSTGRES_DB: faizanmart
+  POSTGRES_USER: faizanmart
+  POSTGRES_PASSWORD: faizanmart
+  REDIS_URL: redis://localhost:6379/0
+  CELERY_BROKER_URL: redis://localhost:6379/0
+  CELERY_RESULT_BACKEND: redis://localhost:6379/0
+  ELASTICSEARCH_URL: http://localhost:9200
+  CORS_ALLOWED_ORIGINS: http://localhost:3000
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install flake8
+        run: pip install flake8
+      - name: Flake8 check
+        run: flake8 apps FaizanMart manage.py
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: faizanmart
+          POSTGRES_USER: faizanmart
+          POSTGRES_PASSWORD: faizanmart
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U faizanmart -d faizanmart"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd "curl -sf http://localhost:9200/_cluster/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install coverage
+      - name: Run migrations check
+        run: python manage.py makemigrations --check --dry-run --settings=FaizanMart.settings.test
+      - name: Run test suite with coverage
+        run: |
+          coverage run --source=apps --omit='*/migrations/*,*/tests*,*/tests_*' manage.py test --settings=FaizanMart.settings.test --noinput
+          coverage report -m
+          coverage xml
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: faizanmart:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy is intentionally left as a manual/disabled placeholder until a hosting target
+  # (server, registry, secrets) exists — see Phase 9/13 of the project roadmap.
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: [docker-build]
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - run: echo "Wire this up once a hosting target and deploy secrets exist."

@@ -22,10 +22,29 @@ services:
     ports:
       - "6380:6379"
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   web:
     build: .
     restart: unless-stopped
-    command: python manage.py runserver 0.0.0.0:8000
+    # daphne (ASGI) serves both regular HTTP and the /ws/ WebSocket routes (real-time chat)
+    # through one process — `runserver`/a plain WSGI server can't handle the WebSocket side.
+    command: daphne -b 0.0.0.0 -p 8000 FaizanMart.asgi:application
     volumes:
       - .:/app
     ports:
@@ -37,11 +56,22 @@ services:
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      # Ollama runs on the host (not in this compose stack) — host.docker.internal resolves
+      # to the host machine from inside the container. Override in .env if Ollama is
+      # somewhere else (e.g. its own container, or a remote inference box).
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      # host.docker.internal is automatic on Docker Desktop (Windows/Mac); this makes it
+      # resolve on Linux hosts too.
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_started
+      elasticsearch:
+        condition: service_healthy
 
   celery:
     build: .
@@ -57,11 +87,40 @@ services:
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_started
+      elasticsearch:
+        condition: service_healthy
+
+  celery-beat:
+    build: .
+    restart: unless-stopped
+    # Schedules the periodic cleanup tasks in CELERY_BEAT_SCHEDULE (settings/base.py);
+    # the `celery` service above only consumes tasks, it doesn't schedule the periodic ones.
+    command: celery -A FaizanMart beat -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      RUN_MIGRATIONS: "false"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  es_data:

@@ -1,13 +1,16 @@
+from datetime import timedelta
 from unittest.mock import patch
 
 import pyotp
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from . import services
-from .models import LoginHistory, TwoFactorAuth, UserSession
+from .models import Address, LoginHistory, TwoFactorAuth, UserSession
+from .tasks import cleanup_expired_sessions_task
 
 User = get_user_model()
 
@@ -189,3 +192,124 @@ class SessionTemplateFlowTests(APITestCase):
 
         response = self.client.get(reverse("accounts:logout"))
         self.assertRedirects(response, reverse("accounts:login"))
+
+
+class AddressBookTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="grace@example.com", password="S0meStrongPass!")
+        self.other_user = User.objects.create_user(email="heidi@example.com", password="S0meStrongPass!")
+        login = self.client.post(
+            reverse("accounts_api:login"), {"email": "grace@example.com", "password": "S0meStrongPass!"}
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+    def _address_payload(self, **overrides):
+        payload = {
+            "label": "Home",
+            "full_name": "Grace Hopper",
+            "phone_number": "03001234567",
+            "address_line1": "1 Main St",
+            "city": "Lahore",
+            "country": "Pakistan",
+        }
+        payload.update(overrides)
+        return payload
+
+    def test_first_address_becomes_default_for_shipping_and_billing(self):
+        response = self.client.post(reverse("accounts_api:address-list"), self._address_payload())
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(response.data["is_default_shipping"])
+        self.assertTrue(response.data["is_default_billing"])
+
+    def test_second_address_does_not_auto_become_default(self):
+        self.client.post(reverse("accounts_api:address-list"), self._address_payload(label="Home"))
+        response = self.client.post(
+            reverse("accounts_api:address-list"), self._address_payload(label="Office", city="Karachi")
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertFalse(response.data["is_default_shipping"])
+        self.assertFalse(response.data["is_default_billing"])
+
+    def test_set_default_shipping_clears_previous_default(self):
+        first = self.client.post(reverse("accounts_api:address-list"), self._address_payload(label="Home")).data
+        second = self.client.post(
+            reverse("accounts_api:address-list"), self._address_payload(label="Office", city="Karachi")
+        ).data
+
+        response = self.client.post(
+            reverse("accounts_api:address-set-default-shipping", args=[second["id"]])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["is_default_shipping"])
+
+        first_address = Address.objects.get(pk=first["id"])
+        self.assertFalse(first_address.is_default_shipping)
+        # Billing default is independent and untouched by the shipping-only action.
+        self.assertTrue(first_address.is_default_billing)
+
+    def test_deleting_default_address_promotes_another(self):
+        first = self.client.post(reverse("accounts_api:address-list"), self._address_payload(label="Home")).data
+        self.client.post(
+            reverse("accounts_api:address-list"), self._address_payload(label="Office", city="Karachi")
+        ).data
+
+        response = self.client.delete(reverse("accounts_api:address-detail", args=[first["id"]]))
+        self.assertEqual(response.status_code, 204)
+
+        remaining = Address.objects.get(user=self.user)
+        self.assertTrue(remaining.is_default_shipping)
+        self.assertTrue(remaining.is_default_billing)
+
+    def test_user_cannot_see_or_modify_another_users_address(self):
+        other_address = services.create_address(
+            self.other_user,
+            label="Secret",
+            full_name="Heidi",
+            phone_number="03000000000",
+            address_line1="Hidden St",
+            city="Multan",
+            country="Pakistan",
+        )
+
+        list_response = self.client.get(reverse("accounts_api:address-list"))
+        self.assertEqual(list_response.data["count"] if "count" in list_response.data else len(list_response.data), 0)
+
+        detail_response = self.client.get(reverse("accounts_api:address-detail", args=[other_address.id]))
+        self.assertEqual(detail_response.status_code, 404)
+
+    def test_unauthenticated_access_denied(self):
+        self.client.credentials()
+        response = self.client.get(reverse("accounts_api:address-list"))
+        self.assertEqual(response.status_code, 401)
+
+
+class SessionCleanupTaskTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="cleanup@example.com", password="S0meStrongPass!")
+
+    def test_cleanup_deactivates_old_sessions_and_trims_login_history(self):
+        old_cutoff = timezone.now() - timedelta(days=45)
+        recent_session = UserSession.objects.create(user=self.user, is_active=True)
+        stale_session = UserSession.objects.create(user=self.user, is_active=True)
+        UserSession.objects.filter(pk=stale_session.pk).update(last_seen_at=old_cutoff)
+
+        recent_login = LoginHistory.objects.create(
+            user=self.user, email_attempted=self.user.email, method="password", was_successful=True
+        )
+        stale_login = LoginHistory.objects.create(
+            user=self.user, email_attempted=self.user.email, method="password", was_successful=True
+        )
+        LoginHistory.objects.filter(pk=stale_login.pk).update(created_at=old_cutoff)
+
+        result = cleanup_expired_sessions_task(retention_days=30)
+
+        self.assertEqual(result["sessions_deactivated"], 1)
+        self.assertEqual(result["login_history_deleted"], 1)
+
+        recent_session.refresh_from_db()
+        stale_session.refresh_from_db()
+        self.assertTrue(recent_session.is_active)
+        self.assertFalse(stale_session.is_active)
+
+        self.assertTrue(LoginHistory.objects.filter(pk=recent_login.pk).exists())
+        self.assertFalse(LoginHistory.objects.filter(pk=stale_login.pk).exists())

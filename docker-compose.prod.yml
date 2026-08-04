@@ -1,0 +1,32 @@
+# Production overrides. Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Differences from the base file (which is dev-oriented):
+#   - no bind-mounting the repo into the containers — the image built by `docker build`
+#     (COPY . .) is authoritative, so a stray local edit can't silently diverge from
+#     what's actually running.
+#   - `web` only publishes to localhost:8000, since Nginx (deploy/nginx.conf) is the
+#     public entry point and terminates TLS in front of it.
+#   - Postgres/Redis/Elasticsearch ports aren't published to the host at all — nothing
+#     outside the docker network needs to reach them directly in production.
+
+services:
+  db:
+    ports: []
+
+  redis:
+    ports: []
+
+  elasticsearch:
+    ports: []
+
+  web:
+    volumes: []
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  celery:
+    volumes: []
+
+  celery-beat:
+    volumes: []

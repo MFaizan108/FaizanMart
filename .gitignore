@@ -20,6 +20,18 @@ staticfiles/
 # Environment variables
 .env
 
+# Test / coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Database backups
+backups/
+
+# Celery Beat local schedule database
+celerybeat-schedule*
+
 # IDE
 .vscode/
 .idea/

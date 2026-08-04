@@ -27,8 +27,10 @@ def check_usage_eligibility(coupon, user, subtotal):
         raise ValueError(f"Order must be at least {coupon.min_order_amount} to use this coupon.")
 
 
-def validate_coupon(code, user, subtotal):
+def validate_coupon(code, user, subtotal, *, lock=False):
     coupon = get_active_coupon(code)
+    if lock:
+        coupon = Coupon.objects.select_for_update().get(pk=coupon.pk)
     check_usage_eligibility(coupon, user, subtotal)
     return coupon
 

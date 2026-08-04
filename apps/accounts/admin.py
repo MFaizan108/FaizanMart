@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import LoginHistory, TwoFactorAuth, User, UserSession
+from .models import Address, LoginHistory, TwoFactorAuth, User, UserSession
 
 
 @admin.register(User)
@@ -51,3 +51,10 @@ class LoginHistoryAdmin(admin.ModelAdmin):
     list_display = ["email_attempted", "method", "was_successful", "ip_address", "created_at"]
     list_filter = ["method", "was_successful"]
     readonly_fields = [f.name for f in LoginHistory._meta.fields]
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ["user", "label", "city", "country", "is_default_shipping", "is_default_billing"]
+    list_filter = ["address_type", "is_default_shipping", "is_default_billing", "country"]
+    search_fields = ["user__email", "label", "full_name", "city"]

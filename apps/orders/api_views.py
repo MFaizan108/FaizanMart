@@ -2,7 +2,12 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+
+from apps.payments.services import easypaisa as easypaisa_gateway
+from apps.payments.services import jazzcash as jazzcash_gateway
+from apps.payments.services import stripe as stripe_gateway
 
 from . import services
 from .models import Order
@@ -15,15 +20,46 @@ def _is_staff_order_role(user):
 
 class CheckoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "checkout"
 
     def post(self, request):
-        serializer = CheckoutSerializer(data=request.data)
+        serializer = CheckoutSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         try:
             orders = services.place_order(user=request.user, order_fields=serializer.validated_data)
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=400)
-        return Response(OrderSerializer(orders, many=True).data, status=201)
+
+        payload = OrderSerializer(orders, many=True).data
+        payment_method = orders[0].payment_method
+
+        # None of these gateways are trusted to have paid yet: the frontend completes the
+        # provider's flow (Stripe PaymentIntent confirmation / JazzCash & EasyPaisa hosted
+        # checkout redirect), and only that provider's server-to-server callback/webhook
+        # (verified below in webhook_views / callback_views) moves the order out of PENDING.
+        if payment_method == Order.PaymentMethod.STRIPE:
+            try:
+                intent = stripe_gateway.create_payment_intent_for_orders(orders, request.user)
+            except RuntimeError as exc:
+                return Response({"detail": str(exc)}, status=503)
+            return Response({"orders": payload, "client_secret": intent.client_secret}, status=201)
+
+        if payment_method == Order.PaymentMethod.JAZZCASH:
+            try:
+                payment_request = jazzcash_gateway.build_payment_request(orders)
+            except RuntimeError as exc:
+                return Response({"detail": str(exc)}, status=503)
+            return Response({"orders": payload, **payment_request}, status=201)
+
+        if payment_method == Order.PaymentMethod.EASYPAISA:
+            try:
+                payment_request = easypaisa_gateway.build_payment_request(orders)
+            except RuntimeError as exc:
+                return Response({"detail": str(exc)}, status=503)
+            return Response({"orders": payload, **payment_request}, status=201)
+
+        return Response(payload, status=201)
 
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):

@@ -4,15 +4,18 @@ from io import BytesIO
 import qrcode
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework import exceptions, generics, permissions, status
+from rest_framework import exceptions, generics, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from . import services
-from .models import UserSession
+from .models import Address, UserSession
 from .serializers import (
+    AddressSerializer,
     GoogleAuthSerializer,
     LoginSerializer,
     LogoutSerializer,
@@ -42,6 +45,8 @@ def _reset_password_path(uidb64, token):
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_register"
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -63,6 +68,8 @@ class VerifyEmailView(APIView):
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_login"
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -93,6 +100,8 @@ class LoginView(TokenObtainPairView):
 class TwoFactorLoginVerifyView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = TwoFactorLoginVerifySerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "otp"
 
     def post(self, request):
         serializer = TwoFactorLoginVerifySerializer(data=request.data)
@@ -135,6 +144,8 @@ class LogoutView(APIView):
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PasswordResetRequestSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
@@ -148,6 +159,8 @@ class PasswordResetRequestView(APIView):
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PasswordResetConfirmSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
@@ -161,6 +174,8 @@ class PasswordResetConfirmView(APIView):
 class GoogleLoginView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = GoogleAuthSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_login"
 
     def post(self, request):
         serializer = GoogleAuthSerializer(data=request.data)
@@ -187,6 +202,8 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 class TwoFactorEnableView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "otp"
 
     def post(self, request):
         two_factor, provisioning_uri = services.generate_totp_secret(request.user)
@@ -208,6 +225,8 @@ class TwoFactorEnableView(APIView):
 class TwoFactorConfirmView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TwoFactorConfirmSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "otp"
 
     def post(self, request):
         serializer = TwoFactorConfirmSerializer(data=request.data)
@@ -220,6 +239,8 @@ class TwoFactorConfirmView(APIView):
 class TwoFactorDisableView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TwoFactorDisableSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "otp"
 
     def post(self, request):
         serializer = TwoFactorDisableSerializer(data=request.data)
@@ -246,3 +267,32 @@ class SessionRevokeView(APIView):
         if not updated:
             return Response({"detail": "Session not found."}, status=404)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AddressViewSet(viewsets.ModelViewSet):
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Address.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        address = services.create_address(self.request.user, **serializer.validated_data)
+        serializer.instance = address
+
+    def perform_update(self, serializer):
+        address = services.update_address(serializer.instance, **serializer.validated_data)
+        serializer.instance = address
+
+    def perform_destroy(self, instance):
+        services.delete_address(instance)
+
+    @action(detail=True, methods=["post"], url_path="set-default-shipping")
+    def set_default_shipping(self, request, pk=None):
+        address = services.set_default_address(self.get_object(), "is_default_shipping")
+        return Response(self.get_serializer(address).data)
+
+    @action(detail=True, methods=["post"], url_path="set-default-billing")
+    def set_default_billing(self, request, pk=None):
+        address = services.set_default_address(self.get_object(), "is_default_billing")
+        return Response(self.get_serializer(address).data)

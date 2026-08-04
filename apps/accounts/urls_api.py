@@ -1,10 +1,14 @@
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from django.urls import path
+from rest_framework.routers import DefaultRouter
 
 from . import api_views
 
 app_name = "accounts_api"
+
+router = DefaultRouter()
+router.register("addresses", api_views.AddressViewSet, basename="address")
 
 urlpatterns = [
     path("register/", api_views.RegisterView.as_view(), name="register"),
@@ -30,4 +34,4 @@ urlpatterns = [
     path("2fa/disable/", api_views.TwoFactorDisableView.as_view(), name="2fa-disable"),
     path("sessions/", api_views.SessionListView.as_view(), name="sessions"),
     path("sessions/<int:pk>/", api_views.SessionRevokeView.as_view(), name="session-revoke"),
-]
+] + router.urls

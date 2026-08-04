@@ -36,7 +36,7 @@ class Order(TimeStampedModel):
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="orders")
     store = models.ForeignKey("vendors.Store", on_delete=models.PROTECT, related_name="orders")
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True)
 
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     payment_status = models.CharField(

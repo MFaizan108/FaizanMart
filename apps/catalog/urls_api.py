@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from . import api_views
@@ -17,4 +18,6 @@ router.register(
     basename="product-specification",
 )
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("products/search/", api_views.ProductSearchView.as_view(), name="product-search"),
+] + router.urls

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PaymentTransaction, Wallet, WalletTransaction
+from .models import PaymentTransaction, SavedPaymentMethod, Wallet, WalletTransaction
 
 
 @admin.register(Wallet)
@@ -25,3 +25,10 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = ["order", "method", "amount", "status", "created_at"]
     list_filter = ["method", "status"]
     readonly_fields = [f.name for f in PaymentTransaction._meta.fields]
+
+
+@admin.register(SavedPaymentMethod)
+class SavedPaymentMethodAdmin(admin.ModelAdmin):
+    list_display = ["user", "provider", "card_brand", "card_last4", "is_default", "created_at"]
+    list_filter = ["provider", "is_default"]
+    search_fields = ["user__email", "provider_customer_id", "provider_payment_method_id"]

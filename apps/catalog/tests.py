@@ -1,7 +1,9 @@
 import io
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
 from rest_framework.test import APITestCase
@@ -164,3 +166,50 @@ class ProductCreateUpdateTests(CatalogTestBase):
             reverse("catalog_api:product-detail", args=[product.id]), {"name": "Hijacked"}
         )
         self.assertEqual(response.status_code, 403)
+
+
+LOCMEM_CACHE = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "catalog-cache-tests",
+    }
+}
+
+
+@override_settings(CACHES=LOCMEM_CACHE)
+class CachingTests(CatalogTestBase):
+    def setUp(self):
+        cache.clear()
+        self.category = Category.objects.create(name="Cached Category")
+        self.vendor, self.store = make_vendor("cachevendor@example.com")
+        self.product = Product.objects.create(
+            store=self.store, category=self.category, name="Cached Widget", sku="CACHE-1",
+            price="9.99", status=Product.Status.PUBLISHED,
+        )
+
+    def test_product_detail_is_cached_and_invalidated_on_update(self):
+        url = reverse("catalog_api:product-detail", args=[self.product.id])
+
+        first = self.client.get(url)
+        self.assertEqual(first.data["name"], "Cached Widget")
+
+        # Bypass the API/signals to prove the second read comes from cache, not the DB.
+        Product.objects.filter(pk=self.product.id).update(name="Changed In DB Only")
+        second = self.client.get(url)
+        self.assertEqual(second.data["name"], "Cached Widget")
+
+        # A real save (through the model, firing the invalidation signal) busts the cache.
+        self.product.name = "Updated Widget"
+        self.product.save()
+        third = self.client.get(url)
+        self.assertEqual(third.data["name"], "Updated Widget")
+
+    def test_category_list_is_cached_and_invalidated_on_create(self):
+        url = reverse("catalog_api:category-list")
+
+        first = self.client.get(url)
+        self.assertIn("Cached Category", {c["name"] for c in first.data["results"]})
+
+        Category.objects.create(name="New Category")
+        second = self.client.get(url)
+        self.assertIn("New Category", {c["name"] for c in second.data["results"]})

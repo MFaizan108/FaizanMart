@@ -11,8 +11,10 @@ from apps.coupons import services as coupon_services
 from apps.inventory import services as inventory_services
 from apps.inventory.models import Stock
 from apps.notifications import services as notification_services
+from apps.shipping.rules import calculate_shipping_cost
 
 from .models import Order, OrderItem, OrderStatusHistory
+from .tasks import send_order_confirmation_email_task
 
 ALLOWED_TRANSITIONS = {
     Order.Status.PENDING: {Order.Status.PROCESSING, Order.Status.CANCELLED},
@@ -37,41 +39,62 @@ def _pick_warehouse_with_stock(product, quantity):
 def place_order(*, user, order_fields):
     order_fields = dict(order_fields)
     coupon_code = order_fields.pop("coupon_code", "")
+    # shipping_cost is never trusted from the client — it's computed per store group below
+    # from the shipping rules engine (apps.shipping.rules), based on the resolved address,
+    # each group's weight/subtotal, and the store.
+    order_fields.pop("shipping_cost", None)
 
     cart, _ = Cart.objects.get_or_create(user=user)
-    items = list(cart.items.select_related("product", "variant", "product__store"))
-    if not items:
-        raise ValueError("Your cart is empty.")
-
-    groups = defaultdict(list)
-    for item in items:
-        groups[item.product.store_id].append(item)
-
-    coupon = None
-    if coupon_code:
-        cart_subtotal = sum((item.unit_price * item.quantity for item in items), Decimal("0"))
-        coupon = coupon_services.validate_coupon(coupon_code, user, cart_subtotal)
-        if coupon.store_id is not None and coupon.store_id not in groups:
-            raise ValueError(f"Coupon '{coupon_code}' is not valid for the products in your cart.")
-    coupon_applied = False
 
     orders = []
     with transaction.atomic():
+        # Lock the cart row so a concurrent double-submit blocks until this checkout
+        # commits (and clears the cart) rather than both requests placing an order
+        # from the same items.
+        cart = Cart.objects.select_for_update().get(pk=cart.pk)
+        items = list(cart.items.select_related("product", "variant", "product__store"))
+        if not items:
+            raise ValueError("Your cart is empty.")
+
+        groups = defaultdict(list)
+        for item in items:
+            groups[item.product.store_id].append(item)
+
+        coupon = None
+        if coupon_code:
+            cart_subtotal = sum((item.unit_price * item.quantity for item in items), Decimal("0"))
+            # lock=True: row-locks the coupon so a concurrent checkout can't also pass
+            # the usage_limit check before this one commits its redemption.
+            coupon = coupon_services.validate_coupon(coupon_code, user, cart_subtotal, lock=True)
+            if coupon.store_id is not None and coupon.store_id not in groups:
+                raise ValueError(f"Coupon '{coupon_code}' is not valid for the products in your cart.")
+        coupon_applied = False
+
         for group_items in groups.values():
             store = group_items[0].product.store
             subtotal = sum((item.unit_price * item.quantity for item in group_items), Decimal("0"))
+            group_weight = sum(
+                ((item.product.weight or Decimal("0")) * item.quantity for item in group_items), Decimal("0")
+            )
+            shipping_cost = calculate_shipping_cost(
+                country=order_fields.get("shipping_country", ""),
+                province=order_fields.get("shipping_state", ""),
+                city=order_fields.get("shipping_city", ""),
+                store=store,
+                total_weight=group_weight,
+                order_amount=subtotal,
+            ) or Decimal("0")
 
             discount_amount = Decimal("0")
             group_coupon = None
             if coupon and not coupon_applied and (coupon.store_id is None or coupon.store_id == store.id):
                 group_coupon = coupon
-                discount_amount = coupon_services.compute_discount(
-                    coupon, subtotal, order_fields.get("shipping_cost", Decimal("0"))
-                )
+                discount_amount = coupon_services.compute_discount(coupon, subtotal, shipping_cost)
                 coupon_applied = True
 
             order = Order.objects.create(
-                customer=user, store=store, discount_amount=discount_amount, **order_fields
+                customer=user, store=store, discount_amount=discount_amount,
+                shipping_cost=shipping_cost, **order_fields
             )
 
             for item in group_items:
@@ -126,6 +149,7 @@ def place_order(*, user, order_fields):
             message=f"You have a new order from {order.customer.email}.",
             notification_type="order_update",
         )
+        send_order_confirmation_email_task.delay(order.id)
 
     return orders
 

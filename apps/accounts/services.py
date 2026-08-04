@@ -3,14 +3,15 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import signing
-from django.core.mail import send_mail
+from django.db import transaction
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 
-from .models import LoginHistory, TwoFactorAuth, UserSession
+from .models import Address, LoginHistory, TwoFactorAuth, UserSession
+from .tasks import send_email_task
 from .tokens import email_verification_token
 
 User = get_user_model()
@@ -46,14 +47,13 @@ def send_verification_email(user, request, verify_path_builder):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = email_verification_token.make_token(user)
     url = _build_absolute_url(request, verify_path_builder(uidb64, token))
-    send_mail(
+    send_email_task.delay(
         subject="Verify your FaizanMart email",
         message=(
             f"Hi {user.get_short_name()},\n\n"
             f"Please verify your email by visiting the link below:\n{url}\n\n"
             "If you did not create this account, you can ignore this email."
         ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
     )
 
@@ -77,14 +77,13 @@ def send_password_reset_email(user, request, reset_path_builder):
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
     url = _build_absolute_url(request, reset_path_builder(uidb64, token))
-    send_mail(
+    send_email_task.delay(
         subject="Reset your FaizanMart password",
         message=(
             f"Hi {user.get_short_name()},\n\n"
             f"Reset your password using the link below:\n{url}\n\n"
             "If you did not request this, you can ignore this email."
         ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
     )
 
@@ -202,3 +201,72 @@ def disable_totp(user):
 
 def has_two_factor_enabled(user):
     return TwoFactorAuth.objects.filter(user=user, is_enabled=True).exists()
+
+
+def _clear_default(user, field):
+    Address.objects.filter(user=user, **{field: True}).update(**{field: False})
+
+
+@transaction.atomic
+def create_address(user, *, is_default_shipping=False, is_default_billing=False, **fields):
+    is_first_address = not Address.objects.filter(user=user).exists()
+    if is_first_address:
+        is_default_shipping = True
+        is_default_billing = True
+    if is_default_shipping:
+        _clear_default(user, "is_default_shipping")
+    if is_default_billing:
+        _clear_default(user, "is_default_billing")
+    return Address.objects.create(
+        user=user,
+        is_default_shipping=is_default_shipping,
+        is_default_billing=is_default_billing,
+        **fields,
+    )
+
+
+@transaction.atomic
+def update_address(address, *, is_default_shipping=None, is_default_billing=None, **fields):
+    for key, value in fields.items():
+        setattr(address, key, value)
+    if is_default_shipping:
+        _clear_default(address.user, "is_default_shipping")
+        address.is_default_shipping = True
+    elif is_default_shipping is False:
+        address.is_default_shipping = False
+    if is_default_billing:
+        _clear_default(address.user, "is_default_billing")
+        address.is_default_billing = True
+    elif is_default_billing is False:
+        address.is_default_billing = False
+    address.save()
+    return address
+
+
+@transaction.atomic
+def set_default_address(address, field):
+    """field is 'is_default_shipping' or 'is_default_billing'."""
+    _clear_default(address.user, field)
+    setattr(address, field, True)
+    address.save(update_fields=[field])
+    return address
+
+
+@transaction.atomic
+def delete_address(address):
+    user = address.user
+    was_default_shipping = address.is_default_shipping
+    was_default_billing = address.is_default_billing
+    address.delete()
+
+    if was_default_shipping or was_default_billing:
+        replacement = Address.objects.filter(user=user).order_by("-created_at").first()
+        if replacement is not None:
+            update_fields = []
+            if was_default_shipping:
+                replacement.is_default_shipping = True
+                update_fields.append("is_default_shipping")
+            if was_default_billing:
+                replacement.is_default_billing = True
+                update_fields.append("is_default_billing")
+            replacement.save(update_fields=update_fields)

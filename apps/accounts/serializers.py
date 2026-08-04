@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from . import services
-from .models import UserSession
+from .models import Address, UserSession
 
 User = get_user_model()
 
@@ -95,3 +95,26 @@ class UserSessionSerializer(serializers.ModelSerializer):
         model = UserSession
         fields = ["id", "ip_address", "user_agent", "created_at", "last_seen_at", "is_active"]
         read_only_fields = fields
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = [
+            "id",
+            "label",
+            "full_name",
+            "phone_number",
+            "address_line1",
+            "address_line2",
+            "city",
+            "state",
+            "postal_code",
+            "country",
+            "address_type",
+            "is_default_shipping",
+            "is_default_billing",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]

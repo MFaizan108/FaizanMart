@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
+from apps.accounts import services as accounts_services
 from apps.cart.models import Cart, CartItem
 from apps.catalog.models import Category, Product
 from apps.coupons.models import Coupon
@@ -115,6 +116,44 @@ class CheckoutTests(OrdersTestBase):
         response = self.client.post(reverse("orders_api:checkout"), VALID_SHIPPING)
         self.assertEqual(response.status_code, 400)
 
+    def test_checkout_using_saved_shipping_address_id(self):
+        address = accounts_services.create_address(
+            self.customer,
+            full_name="Jane Doe",
+            phone_number="0300-1234567",
+            address_line1="123 Main St",
+            city="Karachi",
+            country="Pakistan",
+        )
+        self.add_to_cart(self.customer, self.product_a, 1)
+        self.login("ordercustomer@example.com")
+
+        response = self.client.post(
+            reverse("orders_api:checkout"),
+            {"shipping_address_id": address.id, "payment_method": "cod"},
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data[0]["shipping_full_name"], "Jane Doe")
+        self.assertEqual(response.data[0]["shipping_city"], "Karachi")
+
+    def test_checkout_rejects_shipping_address_id_belonging_to_another_user(self):
+        other_address = accounts_services.create_address(
+            self.vendor_a,
+            full_name="Someone Else",
+            phone_number="0300-0000000",
+            address_line1="Other St",
+            city="Lahore",
+            country="Pakistan",
+        )
+        self.add_to_cart(self.customer, self.product_a, 1)
+        self.login("ordercustomer@example.com")
+
+        response = self.client.post(
+            reverse("orders_api:checkout"),
+            {"shipping_address_id": other_address.id, "payment_method": "cod"},
+        )
+        self.assertEqual(response.status_code, 400)
+
 
 class TransitionTests(OrdersTestBase):
     def setUp(self):
@@ -157,7 +196,7 @@ class TransitionTests(OrdersTestBase):
         self.assertEqual(stock.reserved_quantity, 0)  # released
 
     def test_other_customer_cannot_cancel_order(self):
-        other = User.objects.create_user(
+        User.objects.create_user(
             email="othercustomer@example.com", password="S0meStrongPass!", role=User.Role.CUSTOMER
         )
         self.login("othercustomer@example.com")
@@ -225,6 +264,18 @@ class CouponAndNotificationIntegrationTests(OrdersTestBase):
 
         self.assertTrue(Notification.objects.filter(user=self.customer, notification_type="order_update").exists())
         self.assertTrue(Notification.objects.filter(user=self.vendor_a, notification_type="order_update").exists())
+
+    def test_checkout_emails_order_confirmation(self):
+        from django.core import mail
+
+        self.add_to_cart(self.customer, self.product_a, 1)
+        self.login("ordercustomer@example.com")
+        response = self.client.post(reverse("orders_api:checkout"), VALID_SHIPPING)
+
+        order_number = response.data[0]["order_number"]
+        matching = [m for m in mail.outbox if order_number in m.subject]
+        self.assertEqual(len(matching), 1)
+        self.assertIn(self.customer.email, matching[0].to)
 
     def test_transition_notifies_customer(self):
         self.add_to_cart(self.customer, self.product_a, 1)

@@ -1,0 +1,7 @@
+[flake8]
+max-line-length = 120
+exclude = .venv,*/migrations/*,staticfiles,media,static
+per-file-ignores =
+    FaizanMart/settings/dev.py:F405
+    FaizanMart/settings/prod.py:F405
+    FaizanMart/settings/test.py:F405
