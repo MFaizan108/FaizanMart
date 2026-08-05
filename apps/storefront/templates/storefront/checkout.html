@@ -25,17 +25,17 @@
     <!-- Step indicator -->
     <ol class="mx-auto flex w-full max-w-lg items-center gap-2 text-xs font-medium text-black/40">
         <li class="checkout-step flex flex-1 items-center gap-2" data-step="address">
-            <span class="step-dot flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white">1</span>
+            <span class="step-dot flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white shadow-md shadow-brand/30 transition-colors">1</span>
             <span class="step-label text-black">Address</span>
-            <span class="h-px flex-1 bg-black/10"></span>
+            <span class="h-0.5 flex-1 rounded-full bg-black/10"></span>
         </li>
         <li class="checkout-step flex flex-1 items-center gap-2" data-step="payment">
-            <span class="step-dot flex h-6 w-6 items-center justify-center rounded-full bg-black/10">2</span>
+            <span class="step-dot flex h-8 w-8 items-center justify-center rounded-full bg-black/10 text-sm font-semibold transition-colors">2</span>
             <span class="step-label">Payment</span>
-            <span class="h-px flex-1 bg-black/10"></span>
+            <span class="h-0.5 flex-1 rounded-full bg-black/10"></span>
         </li>
         <li class="checkout-step flex items-center gap-2" data-step="review">
-            <span class="step-dot flex h-6 w-6 items-center justify-center rounded-full bg-black/10">3</span>
+            <span class="step-dot flex h-8 w-8 items-center justify-center rounded-full bg-black/10 text-sm font-semibold transition-colors">3</span>
             <span class="step-label">Review</span>
         </li>
     </ol>
@@ -44,12 +44,12 @@
         <div class="flex flex-col gap-6 md:col-span-2">
 
             <!-- Step 1: Address -->
-            <section id="step-address" class="checkout-panel flex flex-col gap-3">
-                <h2 class="text-lg font-semibold">Shipping address</h2>
+            <section id="step-address" class="checkout-panel card flex flex-col gap-3 p-5">
+                <h2 class="flex items-center gap-2 text-lg font-semibold text-secondary"><span>📍</span> Shipping address</h2>
                 <div id="address-list" class="flex flex-col gap-2"></div>
                 <button id="toggle-address-form" type="button" class="w-fit text-sm text-brand hover:underline">+ Add new address</button>
 
-                <form id="address-form" class="hidden flex-col gap-3 rounded-lg border border-black/10 p-4">
+                <form id="address-form" class="hidden flex-col gap-3 rounded-lg border border-black/10 bg-page/50 p-4">
                     <div class="grid grid-cols-2 gap-3">
                         <input name="full_name" required placeholder="Full name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
                         <input name="phone_number" required placeholder="Phone number" class="rounded-md border border-black/15 px-3 py-2 text-sm">
@@ -60,7 +60,7 @@
                         <input name="state" placeholder="State" class="rounded-md border border-black/15 px-3 py-2 text-sm">
                         <input name="country" required placeholder="Country" class="rounded-md border border-black/15 px-3 py-2 text-sm">
                     </div>
-                    <button type="submit" class="w-fit rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+                    <button type="submit" class="btn-primary w-fit">
                         Save address
                     </button>
                 </form>
@@ -71,9 +71,9 @@
             </section>
 
             <!-- Step 2: Payment -->
-            <section id="step-payment" class="checkout-panel hidden flex-col gap-3">
-                <h2 class="text-lg font-semibold">Payment method</h2>
-                <label class="flex items-center gap-3 rounded-lg border border-brand p-3 text-sm">
+            <section id="step-payment" class="checkout-panel card hidden flex-col gap-3 p-5">
+                <h2 class="flex items-center gap-2 text-lg font-semibold text-secondary"><span>💳</span> Payment method</h2>
+                <label class="flex items-center gap-3 rounded-lg border border-brand bg-brand/5 p-3 text-sm">
                     <input type="radio" checked disabled>
                     Cash on Delivery
                 </label>
@@ -87,8 +87,8 @@
             </section>
 
             <!-- Step 3: Review -->
-            <section id="step-review" class="checkout-panel hidden flex-col gap-4">
-                <h2 class="text-lg font-semibold">Review your order</h2>
+            <section id="step-review" class="checkout-panel card hidden flex-col gap-4 p-5">
+                <h2 class="flex items-center gap-2 text-lg font-semibold text-secondary"><span>✅</span> Review your order</h2>
                 <div class="flex flex-col gap-1 rounded-lg border border-black/10 p-3 text-sm">
                     <span class="font-medium">Shipping to</span>
                     <span id="review-address" class="text-black/60"></span>
@@ -99,24 +99,29 @@
                 </div>
                 <div class="flex flex-col gap-2">
                     <label for="coupon-code" class="text-sm font-medium">Coupon code</label>
-                    <input id="coupon-code" placeholder="Optional" class="w-fit rounded-md border border-black/15 px-3 py-2 text-sm">
+                    <div class="flex w-fit gap-2">
+                        <input id="coupon-code" placeholder="e.g. SAVE10" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                    </div>
                 </div>
                 <button type="button" class="step-back-btn btn-secondary w-fit" data-back="payment">Back</button>
             </section>
         </div>
 
-        <aside class="flex flex-col gap-4 rounded-xl border border-black/10 p-4">
-            <h2 class="text-lg font-semibold">Order summary</h2>
+        <aside class="card sticky top-24 flex flex-col gap-4 p-5">
+            <h2 class="text-lg font-semibold text-secondary">Order summary</h2>
             <div id="summary-items" class="flex flex-col gap-2 text-sm"></div>
             <div class="flex justify-between border-t border-black/10 pt-3 font-semibold">
                 <span>Subtotal</span>
                 <span>Rs <span id="summary-subtotal"></span></span>
             </div>
             <p class="text-xs text-black/40">Shipping and any discount are calculated on the server when you place the order.</p>
-            <p id="checkout-error" class="hidden text-sm text-red-600"></p>
-            <button id="place-order-btn" type="button" disabled class="hidden rounded-md bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark disabled:opacity-60">
+            <p id="checkout-error" class="hidden text-sm text-danger"></p>
+            <button id="place-order-btn" type="button" disabled class="btn-primary hidden w-full justify-center">
                 Place order
             </button>
+            <div class="flex items-center gap-2 border-t border-black/10 pt-4 text-xs text-black/40">
+                <span>🔒</span> Your payment details are never shared with sellers
+            </div>
         </aside>
     </div>
 </div>

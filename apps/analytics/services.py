@@ -1,6 +1,9 @@
 from datetime import timedelta
 
+from dateutil.relativedelta import relativedelta
+
 from django.db.models import Avg, Count, F, Sum
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
 from apps.catalog.models import Product
@@ -159,12 +162,38 @@ def vendor_analytics(store):
     orders = Order.objects.filter(store=store)
     completed = orders.filter(status__in=PURCHASABLE_STATUSES)
     revenue = completed.aggregate(total=Sum("total_amount"))["total"] or 0
+
+    now = timezone.now()
+    window_start = (now - relativedelta(months=5)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    revenue_by_month = {
+        row["month"].strftime("%Y-%m"): row["total"]
+        for row in completed.filter(created_at__gte=window_start)
+        .annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(total=Sum("total_amount"))
+    }
+    monthly_sales = []
+    for i in range(5, -1, -1):
+        month_date = (now - relativedelta(months=i)).replace(day=1)
+        monthly_sales.append({
+            "label": month_date.strftime("%b"),
+            "total": float(revenue_by_month.get(month_date.strftime("%Y-%m"), 0) or 0),
+        })
+
+    views_count = ProductView.objects.filter(product__store=store).count()
+    conversion_rate = round(completed.count() / views_count * 100, 1) if views_count else 0
+
     return {
         "revenue": revenue,
         "sales_count": completed.count(),
         "total_orders": orders.count(),
         "average_order_value": completed.aggregate(avg=Avg("total_amount"))["avg"] or 0,
         "pending_orders": orders.filter(status=Order.Status.PENDING).count(),
+        "product_count": Product.objects.filter(store=store).count(),
+        "customer_count": orders.values("customer_id").distinct().count(),
+        "views_count": views_count,
+        "conversion_rate": conversion_rate,
+        "monthly_sales": monthly_sales,
     }
 
 

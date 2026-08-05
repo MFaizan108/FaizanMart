@@ -91,7 +91,7 @@
 </div>
 
 <template id="product-card-template">
-    <div class="product-card card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
+    <div class="product-card card group relative flex flex-col overflow-hidden">
         <div class="relative aspect-square overflow-hidden bg-black/5">
             <a class="product-link absolute inset-0 block" href="#">
                 <span class="flex h-full w-full items-center justify-center text-4xl text-black/20">📦</span>
@@ -102,6 +102,10 @@
             <button type="button" class="wishlist-btn absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-lg shadow transition hover:scale-105" data-product-id="" data-wishlisted="false" aria-label="Toggle wishlist">
                 <span class="wishlist-icon">🤍</span>
             </button>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 flex translate-y-full justify-center gap-2 p-2 opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                <button type="button" class="quick-view-btn pointer-events-auto flex h-8 items-center gap-1 rounded-full bg-white/95 px-3 text-xs font-medium shadow hover:bg-white" data-product-id="">👁️ Quick View</button>
+                <button type="button" class="compare-btn pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-sm shadow hover:bg-white" data-product-id="" aria-label="Add to compare" title="Compare">⚖️</button>
+            </div>
         </div>
         <div class="flex flex-1 flex-col gap-1 p-3">
             <span class="brand-name text-xs text-black/40"></span>
@@ -113,9 +117,14 @@
             <div class="mt-auto flex items-baseline gap-2 pt-1">
                 <span class="price font-semibold"></span>
             </div>
-            <button type="button" class="card-add-to-cart-btn btn-primary mt-2 w-full !py-2 text-xs" data-product-id="">
-                Add to Cart
-            </button>
+            <div class="mt-2 flex gap-1.5">
+                <button type="button" class="card-add-to-cart-btn btn-secondary flex-1 !py-2 !px-2 text-xs" data-product-id="">
+                    Add to Cart
+                </button>
+                <button type="button" class="card-buy-now-btn btn-primary flex-1 !py-2 !px-2 text-xs" data-product-id="">
+                    Buy Now
+                </button>
+            </div>
         </div>
     </div>
 </template>

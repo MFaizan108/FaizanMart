@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}About Us — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="relative overflow-hidden bg-gradient-to-br from-secondary via-brand to-brand-dark text-white">
+    <div class="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="pointer-events-none absolute -right-10 bottom-0 h-80 w-80 rounded-full bg-accent/20 blur-3xl"></div>
+    <div class="relative z-10 mx-auto flex max-w-4xl flex-col gap-4 px-4 py-16 text-center">
+        <h1 class="text-3xl font-bold sm:text-4xl">About FaizanMart</h1>
+        <p class="mx-auto max-w-xl text-white/70">
+            A multi-vendor marketplace connecting independent sellers with shoppers — one cart,
+            one checkout, thousands of products.
+        </p>
+    </div>
+</div>
+
+<div class="mx-auto flex max-w-4xl flex-col gap-10 px-4 py-14">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-2">
+        <div class="card hover-lift p-6 text-center">
+            <p class="text-3xl font-bold text-brand">{{ store_count }}</p>
+            <p class="mt-1 text-sm text-black/50">Approved sellers</p>
+        </div>
+        <div class="card hover-lift p-6 text-center">
+            <p class="text-3xl font-bold text-brand">{{ product_count }}</p>
+            <p class="mt-1 text-sm text-black/50">Products listed</p>
+        </div>
+    </div>
+
+    <section class="flex flex-col gap-3">
+        <h2 class="text-xl font-bold text-secondary">What we're building</h2>
+        <p class="leading-relaxed text-black/70">
+            FaizanMart is a marketplace platform where independent sellers list and manage their own
+            stores, and shoppers browse, compare and check out across every seller in a single cart.
+            Sellers get their own dashboard to manage products, orders and store settings; buyers get
+            order tracking, wishlists, reviews, returns and a shared cart — regardless of how many
+            different stores an order touches.
+        </p>
+    </section>
+
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="card flex flex-col gap-2 p-5">
+            <span class="text-2xl">🛍️</span>
+            <h3 class="font-semibold">For shoppers</h3>
+            <p class="text-sm text-black/60">Browse thousands of products from independent sellers, all in one place.</p>
+        </div>
+        <div class="card flex flex-col gap-2 p-5">
+            <span class="text-2xl">🏬</span>
+            <h3 class="font-semibold">For sellers</h3>
+            <p class="text-sm text-black/60">List products, manage orders, and track performance from a dedicated seller dashboard.</p>
+        </div>
+        <div class="card flex flex-col gap-2 p-5">
+            <span class="text-2xl">🔒</span>
+            <h3 class="font-semibold">For everyone</h3>
+            <p class="text-sm text-black/60">Secure checkout, order tracking, and buyer protection on every purchase.</p>
+        </div>
+    </section>
+
+    <section class="card flex flex-col items-center gap-3 p-8 text-center">
+        <h2 class="text-lg font-semibold text-secondary">Want to sell with us?</h2>
+        <p class="max-w-md text-sm text-black/60">Setting up a store takes a couple of minutes, and every application is reviewed before it goes live.</p>
+        <a href="{% url 'storefront:sell_with_us' %}" class="btn-primary">Become a seller</a>
+    </section>
+</div>
+{% endblock %}

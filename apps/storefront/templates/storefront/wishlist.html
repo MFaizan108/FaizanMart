@@ -19,7 +19,7 @@
     </div>
 
     <div id="wishlist-empty" class="hidden fade-in flex-col items-center gap-3 py-16 text-center">
-        <span class="text-5xl">🤍</span>
+        <span class="empty-icon">🤍</span>
         <p class="text-black/50">Your wishlist is empty.</p>
         <a href="{% url 'storefront:product_list' %}" class="btn-primary mt-2">Browse products</a>
     </div>
@@ -28,16 +28,16 @@
 </div>
 
 <template id="wishlist-item-template">
-    <div class="flex items-center justify-between gap-4 px-4 py-4">
-        <div>
-            <a class="item-name font-medium hover:text-brand" href="#"></a>
+    <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
+        <div class="min-w-0 flex-1">
+            <a class="item-name block truncate font-medium hover:text-brand" href="#"></a>
             <p class="item-price text-sm text-black/50"></p>
         </div>
-        <div class="flex items-center gap-3">
-            <button type="button" class="move-to-cart-btn rounded-md bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+        <div class="flex shrink-0 items-center gap-3">
+            <button type="button" class="move-to-cart-btn btn-primary !px-4 !py-1.5 text-sm">
                 Move to cart
             </button>
-            <button type="button" class="remove-btn text-sm text-red-600 hover:underline">Remove</button>
+            <button type="button" class="remove-btn shrink-0 text-sm text-danger hover:underline">Remove</button>
         </div>
     </div>
 </template>

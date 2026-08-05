@@ -45,7 +45,7 @@
           emptyEl.classList.add("flex");
         }
       } catch (err) {
-        alert(err.message);
+        Storefront.toast(err.message || "Could not delete address", "error");
       }
     });
     return node;

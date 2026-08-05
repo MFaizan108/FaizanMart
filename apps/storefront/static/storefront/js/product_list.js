@@ -103,10 +103,21 @@
 
     const addToCartBtn = node.querySelector(".card-add-to-cart-btn");
     addToCartBtn.dataset.productId = product.id;
+    const buyNowBtn = node.querySelector(".card-buy-now-btn");
+    buyNowBtn.dataset.productId = product.id;
     if (product.is_available === false) {
       node.querySelector(".outofstock-badge").classList.remove("hidden");
       addToCartBtn.disabled = true;
       addToCartBtn.textContent = "Out of Stock";
+      buyNowBtn.remove();
+    }
+
+    const quickViewBtn = node.querySelector(".quick-view-btn");
+    quickViewBtn.dataset.productId = product.id;
+    const compareBtn = node.querySelector(".compare-btn");
+    compareBtn.dataset.productId = product.id;
+    if (window.Compare && window.Compare.isCompared(product.id)) {
+      compareBtn.classList.add("text-brand");
     }
     return node;
   }

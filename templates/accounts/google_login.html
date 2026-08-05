@@ -21,11 +21,11 @@
     }
 </script>
 {% else %}
-<p class="text-sm text-black/60">
-    Google login is not configured yet. Set <code class="rounded bg-black/5 px-1">GOOGLE_OAUTH_CLIENT_ID</code> in <code class="rounded bg-black/5 px-1">.env</code>.
-</p>
+<div class="alert alert-info">
+    Google login is not configured yet. Set <code class="rounded bg-black/10 px-1">GOOGLE_OAUTH_CLIENT_ID</code> in <code class="rounded bg-black/10 px-1">.env</code>.
+</div>
 {% endif %}
-<p class="text-sm text-black/60">
-    <a href="{% url 'accounts:login' %}" class="text-brand hover:underline">Back to log in</a>
+<p class="mt-6 text-center text-sm text-black/60">
+    <a href="{% url 'accounts:login' %}" class="font-medium text-brand hover:underline">Back to log in</a>
 </p>
 {% endblock %}

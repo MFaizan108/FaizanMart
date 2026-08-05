@@ -66,5 +66,37 @@
     el.textContent = "";
   }
 
-  window.Storefront = { apiFetch, updateCartBadge, showError, hideError, getCookie };
+  /* ---- Toast notifications ---- */
+  const ICONS = { success: "✓", error: "✕", info: "ℹ" };
+
+  function toast(message, type) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+    type = type || "info";
+    const el = document.createElement("div");
+    el.className = "toast toast-" + type;
+    el.innerHTML = `<span>${ICONS[type] || ICONS.info}</span><span>${message}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.classList.add("toast-leaving");
+      el.addEventListener("animationend", () => el.remove());
+    }, 3000);
+  }
+
+  window.Storefront = { apiFetch, updateCartBadge, showError, hideError, getCookie, toast };
+
+  /* ---- Button click ripple (design system micro-animation) ---- */
+  document.addEventListener("click", (event) => {
+    const btn = event.target.closest(".btn-primary, .btn-accent, .btn-secondary");
+    if (!btn || btn.disabled) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+    ripple.style.width = ripple.style.height = size + "px";
+    ripple.style.left = event.clientX - rect.left - size / 2 + "px";
+    ripple.style.top = event.clientY - rect.top - size / 2 + "px";
+    btn.appendChild(ripple);
+    ripple.addEventListener("animationend", () => ripple.remove());
+  });
 })();

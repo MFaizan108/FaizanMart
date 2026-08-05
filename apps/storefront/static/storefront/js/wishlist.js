@@ -25,8 +25,10 @@
       document.dispatchEvent(
         new CustomEvent("wishlist:changed", { detail: { productId, added: result.added } })
       );
+      Storefront.toast(result.added ? "Added to wishlist" : "Removed from wishlist", "success");
     } catch (err) {
       console.error("Wishlist toggle failed", err);
+      Storefront.toast("Could not update wishlist", "error");
     } finally {
       btn.disabled = false;
     }

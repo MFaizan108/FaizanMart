@@ -1,5 +1,5 @@
 {% load humanize %}
-<div class="product-card card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
+<div class="product-card card group relative flex flex-col overflow-hidden">
     <div class="relative aspect-square overflow-hidden bg-black/5">
         <a href="{% url 'storefront:product_detail' product.id %}" class="absolute inset-0 block">
             {% with product.images.all|first as image %}
@@ -17,6 +17,8 @@
             {% endif %}
             {% if not product.card_in_stock %}
             <span class="badge badge-outofstock">Out of stock</span>
+            {% elif product.card_stock_qty and product.card_stock_qty <= 10 %}
+            <span class="badge badge-warning">Only {{ product.card_stock_qty }} left</span>
             {% endif %}
         </div>
         <button type="button"
@@ -26,6 +28,16 @@
                 aria-label="Toggle wishlist">
             <span class="wishlist-icon">{% if product.id in wishlisted_ids %}❤️{% else %}🤍{% endif %}</span>
         </button>
+
+        <!-- Hover-reveal quick actions -->
+        <div class="pointer-events-none absolute inset-x-0 bottom-0 flex translate-y-full justify-center gap-2 p-2 opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+            <button type="button" class="quick-view-btn pointer-events-auto flex h-8 items-center gap-1 rounded-full bg-white/95 px-3 text-xs font-medium shadow hover:bg-white" data-product-id="{{ product.id }}">
+                👁️ Quick View
+            </button>
+            <button type="button" class="compare-btn pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-sm shadow hover:bg-white" data-product-id="{{ product.id }}" aria-label="Add to compare" title="Compare">
+                ⚖️
+            </button>
+        </div>
     </div>
     <div class="flex flex-1 flex-col gap-1 p-3">
         {% if product.brand %}
@@ -38,7 +50,7 @@
         </div>
         <div class="mt-auto flex items-baseline gap-2 pt-1">
             {% if product.flash_sale_price %}
-            <span class="font-semibold text-red-600">Rs {{ product.flash_sale_price|floatformat:0|intcomma }}</span>
+            <span class="font-semibold text-danger">Rs {{ product.flash_sale_price|floatformat:0|intcomma }}</span>
             <span class="text-xs text-black/40 line-through">Rs {{ product.price|floatformat:0|intcomma }}</span>
             {% else %}
             <span class="font-semibold">Rs {{ product.price|floatformat:0|intcomma }}</span>
@@ -50,11 +62,23 @@
         {% if product.store %}
         <a href="{% url 'storefront:seller_storefront' product.store.slug %}" class="truncate text-xs text-black/40 hover:text-brand">Sold by {{ product.store.name }}</a>
         {% endif %}
-        <button type="button"
-                class="card-add-to-cart-btn btn-primary mt-2 w-full !py-2 text-xs"
-                data-product-id="{{ product.id }}"
-                {% if not product.card_in_stock %}disabled{% endif %}>
-            {% if product.card_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
-        </button>
+        {% if product.card_in_stock %}
+        <p class="text-xs text-success">✓ Free Delivery</p>
+        {% endif %}
+        <div class="mt-2 flex gap-1.5">
+            <button type="button"
+                    class="card-add-to-cart-btn btn-secondary flex-1 !py-2 !px-2 text-xs"
+                    data-product-id="{{ product.id }}"
+                    {% if not product.card_in_stock %}disabled{% endif %}>
+                {% if product.card_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
+            </button>
+            {% if product.card_in_stock %}
+            <button type="button"
+                    class="card-buy-now-btn btn-primary flex-1 !py-2 !px-2 text-xs"
+                    data-product-id="{{ product.id }}">
+                Buy Now
+            </button>
+            {% endif %}
+        </div>
     </div>
 </div>

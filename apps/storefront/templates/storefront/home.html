@@ -7,37 +7,51 @@
 <div class="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-8">
 
     <!-- Hero -->
-    <section id="hero-carousel" class="relative overflow-hidden rounded-2xl" data-index="0">
+    <section id="hero-carousel" class="relative overflow-hidden rounded-2xl shadow-md" data-index="0">
         {% if banners %}
         <div class="hero-slides">
             {% for banner in banners %}
-            <a href="{{ banner.link_url|default:'/products/' }}"
-               class="hero-slide {% if not forloop.first %}hidden{% endif %} block">
-                <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="h-72 w-full object-cover sm:h-96">
-            </a>
+            <div class="hero-slide relative {% if not forloop.first %}hidden{% endif %}">
+                <a href="{{ banner.link_url|default:'/products/' }}" class="block">
+                    <img src="{{ banner.image.url }}" alt="{{ banner.title }}"
+                         class="h-[280px] w-full object-cover sm:h-[380px] lg:h-[440px]">
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent"></div>
+                    <div class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 p-8 text-white sm:p-14">
+                        {% if banner.title %}
+                        <h2 class="max-w-2xl text-3xl font-bold leading-tight drop-shadow sm:text-5xl">{{ banner.title }}</h2>
+                        {% endif %}
+                        <span class="btn-accent pointer-events-auto w-fit !text-base !px-6 !py-3">Shop Now</span>
+                    </div>
+                </a>
+            </div>
             {% endfor %}
         </div>
         {% if banners|length > 1 %}
         <button type="button" data-dir="-1" aria-label="Previous slide"
-                class="hero-nav absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow hover:bg-white">‹</button>
+                class="hero-nav absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md transition hover:scale-105 hover:bg-white">‹</button>
         <button type="button" data-dir="1" aria-label="Next slide"
-                class="hero-nav absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow hover:bg-white">›</button>
-        <div class="hero-dots absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                class="hero-nav absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md transition hover:scale-105 hover:bg-white">›</button>
+        <div class="hero-dots absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
             {% for banner in banners %}
             <button type="button" data-slide="{{ forloop.counter0 }}" aria-label="Go to slide {{ forloop.counter }}"
-                    class="hero-dot h-2 w-2 rounded-full {% if forloop.first %}bg-white{% else %}bg-white/50{% endif %}"></button>
+                    class="hero-dot h-2 w-2 rounded-full transition-all {% if forloop.first %}w-6 bg-white{% else %}bg-white/50{% endif %}"></button>
             {% endfor %}
         </div>
         {% endif %}
         {% else %}
-        <div class="flex flex-col items-start justify-center gap-4 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 px-8 py-20 text-white sm:px-14">
-            <span class="badge bg-white/15 text-white">Big Deals for Smart Shoppers</span>
-            <h1 class="max-w-xl text-3xl font-bold leading-tight sm:text-5xl">Everything you need, from every vendor you trust.</h1>
-            <p class="max-w-xl text-emerald-50">
-                FaizanMart brings independent sellers together in one storefront — browse, compare
-                and check out in a single cart.
-            </p>
-            <a href="{% url 'storefront:product_list' %}" class="btn-primary !bg-white !text-emerald-800 hover:!bg-emerald-50">Shop Now</a>
+        <div class="relative flex h-[280px] flex-col items-start justify-center gap-3 overflow-hidden bg-gradient-to-br from-secondary via-brand to-brand-dark px-6 text-white sm:h-[380px] sm:px-14 lg:h-[440px]">
+            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            <div class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5"></div>
+            <div class="pointer-events-none absolute -bottom-32 right-1/4 h-80 w-80 rounded-full bg-accent/10"></div>
+            <div class="relative flex flex-col gap-3">
+                <span class="badge-accent w-fit">🔥 Big Deals for Smart Shoppers</span>
+                <h1 class="max-w-2xl text-3xl font-bold leading-tight sm:text-5xl">Shop Smarter with FaizanMart</h1>
+                <p class="max-w-xl text-base text-white/85 sm:text-lg">
+                    Thousands of products from trusted independent sellers — fast delivery, secure payments,
+                    all in a single cart.
+                </p>
+                <a href="{% url 'storefront:product_list' %}" class="btn-accent w-fit !text-base !px-6 !py-3">Shop Now</a>
+            </div>
         </div>
         {% endif %}
     </section>
@@ -51,11 +65,13 @@
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {% for category in categories %}
             <a href="{% url 'storefront:product_list' %}?category={{ category.name|urlencode }}"
-               class="card flex flex-col items-center gap-2 p-4 text-center transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md">
+               class="card group flex flex-col items-center gap-3 p-4 text-center transition duration-200 hover:-translate-y-1 hover:shadow-xl">
                 {% if category.image %}
-                <img src="{{ category.image.url }}" alt="" class="h-12 w-12 rounded-full object-cover">
+                <span class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full transition duration-200 group-hover:scale-110 group-hover:shadow-md {% cycle 'bg-blue-50' 'bg-orange-50' 'bg-emerald-50' 'bg-violet-50' 'bg-pink-50' 'bg-amber-50' 'bg-cyan-50' 'bg-rose-50' %}">
+                    <img src="{{ category.image.url }}" alt="" class="h-full w-full object-cover">
+                </span>
                 {% else %}
-                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-lg font-semibold text-brand">{{ category.name|slice:":1" }}</span>
+                <span class="flex h-16 w-16 items-center justify-center rounded-full text-xl font-semibold transition duration-200 group-hover:scale-110 group-hover:shadow-md {% cycle 'bg-blue-50 text-blue-600' 'bg-orange-50 text-orange-600' 'bg-emerald-50 text-emerald-600' 'bg-violet-50 text-violet-600' 'bg-pink-50 text-pink-600' 'bg-amber-50 text-amber-600' 'bg-cyan-50 text-cyan-600' 'bg-rose-50 text-rose-600' %}">{{ category.name|slice:":1" }}</span>
                 {% endif %}
                 <span class="text-xs font-medium">{{ category.name }}</span>
             </a>
@@ -126,6 +142,49 @@
         {% endif %}
     </section>
 
+    <!-- Top brands -->
+    {% if top_brands %}
+    <section class="flex flex-col gap-4">
+        <h2 class="text-xl font-bold">Top Brands</h2>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
+            {% for brand in top_brands %}
+            <a href="{% url 'storefront:product_list' %}?brand={{ brand.name|urlencode }}"
+               class="card hover-lift flex flex-col items-center justify-center gap-2 p-4 text-center">
+                {% if brand.logo %}
+                <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="h-10 max-w-full object-contain grayscale transition group-hover:grayscale-0">
+                {% else %}
+                <span class="text-sm font-bold text-secondary">{{ brand.name }}</span>
+                {% endif %}
+                <span class="text-xs text-black/40">{{ brand.product_count }} product{{ brand.product_count|pluralize }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Top sellers -->
+    {% if top_sellers %}
+    <section class="flex flex-col gap-4">
+        <h2 class="text-xl font-bold">Top Sellers</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for store in top_sellers %}
+            <a href="{% url 'storefront:seller_storefront' store.slug %}" class="card hover-lift flex items-center gap-3 p-4">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-lg font-bold text-brand">
+                    {% if store.logo %}<img src="{{ store.logo.url }}" alt="" class="h-full w-full object-cover">{% else %}{{ store.name|slice:":1" }}{% endif %}
+                </span>
+                <div class="flex min-w-0 flex-col">
+                    <span class="truncate font-medium">{{ store.name }}</span>
+                    <span class="text-xs text-black/50">
+                        {{ store.product_count }} product{{ store.product_count|pluralize }}
+                        {% if store.store_avg_rating %}· ★ {{ store.store_avg_rating|floatformat:1 }}{% endif %}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <!-- Recently viewed -->
     {% if recently_viewed %}
     <section class="flex flex-col gap-4">
@@ -133,6 +192,26 @@
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {% for product in recently_viewed %}
                 {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Customer reviews -->
+    {% if recent_reviews %}
+    <section class="flex flex-col gap-4">
+        <h2 class="text-xl font-bold">What Our Customers Say</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for review in recent_reviews %}
+            <div class="card flex flex-col gap-2 p-4">
+                <div class="text-amber-500">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+                {% if review.title %}<p class="font-medium">{{ review.title }}</p>{% endif %}
+                <p class="line-clamp-3 text-sm text-black/70">{{ review.comment }}</p>
+                <p class="mt-auto text-xs text-black/40">
+                    {{ review.customer.get_short_name|default:review.customer.email }} · on
+                    <a href="{% url 'storefront:product_detail' review.product_id %}" class="hover:text-brand">{{ review.product.name|truncatechars:30 }}</a>
+                </p>
+            </div>
             {% endfor %}
         </div>
     </section>
@@ -146,13 +225,13 @@
     {% endif %}
 
     <!-- Newsletter -->
-    <section class="flex flex-col items-center gap-4 rounded-2xl bg-emerald-900 px-6 py-12 text-center text-white">
+    <section class="flex flex-col items-center gap-4 rounded-2xl bg-secondary px-6 py-12 text-center text-white">
         <h2 class="text-2xl font-bold">Get the best deals in your inbox</h2>
-        <p class="max-w-md text-emerald-100">Subscribe for exclusive offers, new arrivals and flash sale alerts.</p>
+        <p class="max-w-md text-white/70">Subscribe for exclusive offers, new arrivals and flash sale alerts.</p>
         <form class="newsletter-form flex w-full max-w-md flex-col gap-2 sm:flex-row">
             <input type="email" name="email" required placeholder="Your email address"
-                   class="flex-1 rounded-md px-4 py-2.5 text-sm text-black/90">
-            <button type="submit" class="btn-primary !bg-white !text-emerald-800 hover:!bg-emerald-50">Subscribe</button>
+                   class="flex-1 rounded-md border border-white/20 bg-white px-4 py-2.5 text-sm text-black/90 outline-none focus:ring-2 focus:ring-accent">
+            <button type="submit" class="btn-accent justify-center">Subscribe</button>
         </form>
         <p class="newsletter-message hidden text-xs"></p>
     </section>

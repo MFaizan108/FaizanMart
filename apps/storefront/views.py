@@ -1,12 +1,17 @@
+from dateutil.relativedelta import relativedelta
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, F, Sum
+from django.db.models import Avg, Count, F, Q, Sum
+from django.db.models.functions import TruncMonth
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from apps.catalog.models import Brand, Category, Product
 from apps.inventory.models import Stock
 from apps.marketing import services as marketing_services
-from apps.orders.models import Order
+from apps.notifications.models import Notification
+from apps.orders.models import Order, ReturnRequest
 from apps.payments import services as payments_services
 from apps.reviews.models import Review, WishlistItem
 from apps.support.models import FAQ
@@ -84,8 +89,10 @@ def _decorate_products_for_cards(products):
 
         if product.product_type == Product.ProductType.DIGITAL or product.id not in stock_map:
             product.card_in_stock = True  # untracked/digital = unlimited, matches apps.cart.services
+            product.card_stock_qty = None
         else:
-            product.card_in_stock = stock_map[product.id] > 0
+            product.card_stock_qty = max(stock_map[product.id], 0)
+            product.card_in_stock = product.card_stock_qty > 0
 
     return products
 
@@ -127,6 +134,29 @@ def home(request):
 
     wishlisted_ids = _wishlisted_ids(request, all_products)
 
+    top_brands = list(
+        Brand.objects.filter(is_active=True)
+        .annotate(product_count=Count("products", filter=Q(products__status=Product.Status.PUBLISHED)))
+        .filter(product_count__gt=0)
+        .order_by("-product_count")[:8]
+    )
+
+    top_sellers = list(
+        Store.objects.filter(status=Store.Status.APPROVED)
+        .annotate(
+            product_count=Count("products", filter=Q(products__status=Product.Status.PUBLISHED), distinct=True),
+            store_avg_rating=Avg("products__reviews__rating"),
+        )
+        .filter(product_count__gt=0)
+        .order_by("-product_count")[:6]
+    )
+
+    recent_reviews = list(
+        Review.objects.exclude(comment="")
+        .select_related("customer", "product")
+        .order_by("-created_at")[:6]
+    )
+
     return render(request, "storefront/home.html", {
         "categories": categories,
         "banners": banners,
@@ -139,6 +169,9 @@ def home(request):
         "recently_viewed": recently_viewed,
         "promo_banner": promo_banner,
         "wishlisted_ids": wishlisted_ids,
+        "top_brands": top_brands,
+        "top_sellers": top_sellers,
+        "recent_reviews": recent_reviews,
     })
 
 
@@ -169,9 +202,11 @@ def product_detail(request, pk):
     )
     reviews = Review.objects.filter(product=product).select_related("customer")
     avg_rating = sum(r.rating for r in reviews) / len(reviews) if reviews else 0
+    avg_rating_rounded = round(avg_rating)
     images = list(product.images.all())
     primary_image = next((img for img in images if img.is_primary), None) or (images[0] if images else None)
     is_wishlisted = bool(_wishlisted_ids(request, [product]))
+    _decorate_products_for_cards([product])
 
     related = list(
         Product.objects.filter(status=Product.Status.PUBLISHED, category=product.category)
@@ -189,6 +224,7 @@ def product_detail(request, pk):
         "product": product,
         "reviews": reviews,
         "avg_rating": avg_rating,
+        "avg_rating_rounded": avg_rating_rounded,
         "primary_image": primary_image,
         "is_wishlisted": is_wishlisted,
         "related_products": related,
@@ -224,12 +260,38 @@ def account_dashboard(request):
     ]
     wallet = payments_services.get_or_create_wallet(request.user)
     recent_orders = orders.select_related("store").order_by("-created_at")[:5]
+
+    now = timezone.now()
+    window_start = (now - relativedelta(months=5)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    spend_by_month = {
+        row["month"].strftime("%Y-%m"): row["total"]
+        for row in orders.filter(created_at__gte=window_start)
+        .exclude(status=Order.Status.CANCELLED)
+        .annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(total=Sum("total_amount"))
+    }
+    monthly_spend = []
+    for i in range(5, -1, -1):
+        month_date = (now - relativedelta(months=i)).replace(day=1)
+        total = spend_by_month.get(month_date.strftime("%Y-%m"), 0) or 0
+        monthly_spend.append({"label": month_date.strftime("%b"), "total": float(total)})
+    max_monthly_spend = max((m["total"] for m in monthly_spend), default=0) or 1
+
     return render(request, "storefront/account_dashboard.html", {
         "total_orders": orders.count(),
         "pending_orders": orders.filter(status__in=pending_statuses).count(),
         "completed_orders": orders.filter(status=Order.Status.DELIVERED).count(),
         "wallet_balance": wallet.balance,
         "recent_orders": recent_orders,
+        "wishlist_count": WishlistItem.objects.filter(customer=request.user).count(),
+        "unread_notifications_count": Notification.objects.filter(user=request.user, is_read=False).count(),
+        "pending_returns_count": ReturnRequest.objects.filter(
+            order__customer=request.user, status=ReturnRequest.Status.REQUESTED
+        ).count(),
+        "reviews_count": Review.objects.filter(customer=request.user).count(),
+        "monthly_spend": monthly_spend,
+        "max_monthly_spend": max_monthly_spend,
     })
 
 
@@ -333,6 +395,21 @@ def seller_store_settings(request):
     if not hasattr(request.user, "store"):
         return render(request, "storefront/seller_no_store.html")
     return render(request, "storefront/seller_store_settings.html", {"store": request.user.store})
+
+
+def compare(request):
+    return render(request, "storefront/compare.html")
+
+
+def about(request):
+    return render(request, "storefront/about.html", {
+        "store_count": Store.objects.filter(status=Store.Status.APPROVED).count(),
+        "product_count": Product.objects.filter(status=Product.Status.PUBLISHED).count(),
+    })
+
+
+def careers(request):
+    return render(request, "storefront/careers.html")
 
 
 def help_center(request):

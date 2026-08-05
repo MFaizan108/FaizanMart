@@ -4,32 +4,119 @@
 {% block title %}Sell on FaizanMart{% endblock %}
 
 {% block content %}
-<div class="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">
-    <div class="flex flex-col gap-2 text-center">
-        <h1 class="text-2xl font-bold">Sell on FaizanMart</h1>
-        <p class="text-sm text-black/60">Create a seller account and start listing products. This creates a new
-            account separate from any existing customer login.</p>
+<div class="relative overflow-hidden bg-gradient-to-br from-secondary via-brand to-brand-dark text-white">
+    <div class="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="pointer-events-none absolute -right-10 bottom-0 h-80 w-80 rounded-full bg-accent/20 blur-3xl"></div>
+    <div class="relative z-10 mx-auto flex max-w-6xl flex-col gap-4 px-4 py-16 text-center">
+        <span class="badge-accent mx-auto">🚀 Become a seller</span>
+        <h1 class="text-3xl font-bold sm:text-4xl">Grow your business with FaizanMart</h1>
+        <p class="mx-auto max-w-xl text-white/70">
+            Reach thousands of shoppers, manage orders from one dashboard, and get paid securely —
+            all with zero setup fees.
+        </p>
     </div>
+</div>
 
-    <div id="sell-success" class="hidden fade-in alert alert-success">
-        Your seller account has been created. Check your email to verify it, then
-        <a href="{% url 'accounts:login' %}" class="font-semibold underline">log in</a> —
-        your store will need admin approval before you can publish products.
-    </div>
-
-    <form id="sell-form" class="flex flex-col gap-3">
-        <input name="store_name" required placeholder="Store name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
-        <textarea name="description" rows="2" placeholder="Store description (optional)" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
-        <div class="grid grid-cols-2 gap-3">
-            <input name="first_name" placeholder="First name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
-            <input name="last_name" placeholder="Last name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+<div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 lg:grid-cols-5">
+    <div class="flex flex-col gap-8 lg:col-span-3">
+        <div class="grid gap-4 sm:grid-cols-3">
+            <div class="card hover-lift flex flex-col gap-2 p-5">
+                <span class="text-2xl">🏬</span>
+                <h3 class="font-semibold">Reach more buyers</h3>
+                <p class="text-sm text-black/60">Your products appear right alongside every other listing on the marketplace.</p>
+            </div>
+            <div class="card hover-lift flex flex-col gap-2 p-5">
+                <span class="text-2xl">📊</span>
+                <h3 class="font-semibold">One dashboard</h3>
+                <p class="text-sm text-black/60">Manage products, orders, and store settings from a single seller dashboard.</p>
+            </div>
+            <div class="card hover-lift flex flex-col gap-2 p-5">
+                <span class="text-2xl">🔒</span>
+                <h3 class="font-semibold">Secure payouts</h3>
+                <p class="text-sm text-black/60">Payments are collected and settled through the platform — no chasing buyers.</p>
+            </div>
         </div>
-        <input name="email" type="email" required placeholder="Email" class="rounded-md border border-black/15 px-3 py-2 text-sm">
-        <input name="phone_number" placeholder="Phone number (optional)" class="rounded-md border border-black/15 px-3 py-2 text-sm">
-        <input name="password" type="password" required placeholder="Password" class="rounded-md border border-black/15 px-3 py-2 text-sm">
-        <p id="sell-error" class="hidden text-sm text-red-600"></p>
-        <button type="submit" class="btn-primary">Create seller account</button>
-    </form>
+
+        <div class="card flex flex-col gap-5 p-6">
+            <h2 class="text-lg font-semibold">How it works</h2>
+            <ol class="flex flex-col gap-4">
+                <li class="flex gap-3">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 font-bold text-brand">1</span>
+                    <div>
+                        <p class="font-medium">Register your store</p>
+                        <p class="text-sm text-black/50">Tell us your store name and create your seller login.</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 font-bold text-brand">2</span>
+                    <div>
+                        <p class="font-medium">Get approved</p>
+                        <p class="text-sm text-black/50">Our team reviews new stores before they go live — usually within a day.</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 font-bold text-brand">3</span>
+                    <div>
+                        <p class="font-medium">List products &amp; start selling</p>
+                        <p class="text-sm text-black/50">Add products from your seller dashboard and start receiving orders.</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2">
+        <div class="card sticky top-24 flex flex-col gap-4 p-6">
+            <div>
+                <h2 class="text-lg font-bold">Create your seller account</h2>
+                <p class="mt-1 text-sm text-black/50">This creates a new account, separate from any existing customer login.</p>
+            </div>
+
+            <div id="sell-success" class="hidden fade-in alert alert-success">
+                Your seller account has been created. Check your email to verify it, then
+                <a href="{% url 'accounts:login' %}" class="font-semibold underline">log in</a> —
+                your store will need admin approval before you can publish products.
+            </div>
+
+            <form id="sell-form" class="flex flex-col gap-3">
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-black/60">Store name</label>
+                    <input name="store_name" required placeholder="e.g. Faizan Electronics" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-black/60">Store description <span class="text-black/30">(optional)</span></label>
+                    <textarea name="description" rows="2" placeholder="What do you sell?" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="mb-1 block text-xs font-medium text-black/60">First name</label>
+                        <input name="first_name" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-xs font-medium text-black/60">Last name</label>
+                        <input name="last_name" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-black/60">Email</label>
+                    <input name="email" type="email" required placeholder="you@example.com" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-black/60">Phone number <span class="text-black/30">(optional)</span></label>
+                    <input name="phone_number" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-black/60">Password</label>
+                    <input name="password" type="password" required class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+                </div>
+                <p id="sell-error" class="hidden text-sm text-danger"></p>
+                <button type="submit" class="btn-primary w-full justify-center">Create seller account</button>
+                <p class="text-center text-xs text-black/40">
+                    Already a seller? <a href="{% url 'accounts:login' %}" class="text-brand hover:underline">Log in</a>
+                </p>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

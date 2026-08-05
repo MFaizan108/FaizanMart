@@ -186,11 +186,18 @@ class ProductSearchView(APIView):
         except ValueError:
             return Response({"detail": "page and page_size must be integers."}, status=400)
 
+        store_param = params.get("store")
+        if store_param:
+            try:
+                int(store_param)
+            except ValueError:
+                return Response({"detail": "store must be an integer."}, status=400)
+
         results = search_services.search_products(
             query=params.get("q", ""),
             category=params.get("category"),
             brand=params.get("brand"),
-            store=params.get("store"),
+            store=store_param,
             min_price=_decimal("min_price"),
             max_price=_decimal("max_price"),
             min_rating=_decimal("min_rating"),

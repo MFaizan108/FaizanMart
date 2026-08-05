@@ -1,8 +1,44 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="mx-auto flex max-w-sm flex-col gap-4 px-4 py-16">
-    <h1 class="text-2xl font-bold">{% block auth_title %}{% endblock %}</h1>
-    {% block auth_content %}{% endblock %}
+<div class="flex min-h-[calc(100vh-4rem)] w-full">
+    <div class="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-secondary via-brand to-brand-dark p-12 text-white lg:flex">
+        <div class="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl"></div>
+
+        <a href="{% url 'storefront:home' %}" class="relative z-10 flex items-center gap-2 text-lg font-bold">
+            <img src="{% static 'storefront/img/favicon.svg' %}" alt="" class="h-9 w-9 rounded-full">
+            FaizanMart
+        </a>
+
+        <div class="relative z-10 flex flex-col gap-6">
+            <h2 class="text-3xl font-bold leading-tight">{% block auth_illustration_title %}Shop smarter, sell better.{% endblock %}</h2>
+            <p class="text-white/70">{% block auth_illustration_subtitle %}Join thousands of shoppers and independent sellers building their business on FaizanMart.{% endblock %}</p>
+            <ul class="flex flex-col gap-3 text-sm text-white/80">
+                <li class="flex items-center gap-2"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15">✓</span> Fast, tracked delivery</li>
+                <li class="flex items-center gap-2"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15">✓</span> Secure payments &amp; buyer protection</li>
+                <li class="flex items-center gap-2"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15">✓</span> Thousands of trusted independent sellers</li>
+            </ul>
+        </div>
+
+        <p class="relative z-10 text-xs text-white/50">&copy; {% now "Y" %} FaizanMart. All rights reserved.</p>
+    </div>
+
+    <div class="flex w-full flex-1 items-center justify-center px-4 py-12 lg:w-1/2">
+        <div class="w-full max-w-sm fade-in">
+            <div class="mb-8 flex justify-center lg:hidden">
+                <a href="{% url 'storefront:home' %}" class="flex items-center gap-2 text-lg font-bold text-secondary">
+                    <img src="{% static 'storefront/img/favicon.svg' %}" alt="" class="h-9 w-9 rounded-full">
+                    FaizanMart
+                </a>
+            </div>
+            <h1 class="text-2xl font-bold text-secondary">{% block auth_title %}{% endblock %}</h1>
+            {% block auth_subtitle %}{% endblock %}
+            <div class="mt-6">
+                {% block auth_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

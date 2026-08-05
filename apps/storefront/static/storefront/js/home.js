@@ -12,6 +12,7 @@
       slides.forEach((slide, i) => slide.classList.toggle("hidden", i !== index));
       dots.forEach((dot, i) => {
         dot.classList.toggle("bg-white", i === index);
+        dot.classList.toggle("w-6", i === index);
         dot.classList.toggle("bg-white/50", i !== index);
       });
     }

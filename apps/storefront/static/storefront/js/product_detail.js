@@ -68,7 +68,7 @@
             });
             loadQuestions();
           } catch (err) {
-            alert(err.message);
+            Storefront.toast(err.message || "Could not post answer", "error");
           }
         });
       }
@@ -117,31 +117,82 @@
   if (actions) {
     const productId = Number(actions.dataset.productId);
     const addBtn = document.getElementById("add-to-cart-btn");
+    const buyNowBtn = document.getElementById("buy-now-btn");
     const variantSelect = document.getElementById("variant");
     const quantityInput = document.getElementById("quantity");
     const errorEl = document.getElementById("add-to-cart-error");
 
-    addBtn.addEventListener("click", async () => {
-      Storefront.hideError(errorEl);
-      addBtn.disabled = true;
-      const originalHtml = addBtn.innerHTML;
-      addBtn.innerHTML = '<span class="spinner"></span> Adding...';
+    function cartPayload() {
+      return {
+        product: productId,
+        variant: variantSelect ? Number(variantSelect.value) : null,
+        quantity: Math.max(1, Number(quantityInput.value) || 1),
+      };
+    }
+
+    if (addBtn) {
+      addBtn.addEventListener("click", async () => {
+        Storefront.hideError(errorEl);
+        addBtn.disabled = true;
+        const originalHtml = addBtn.innerHTML;
+        addBtn.innerHTML = '<span class="spinner-dark"></span> Adding...';
+        try {
+          const cart = await Storefront.apiFetch("/cart/items/", {
+            method: "POST",
+            body: JSON.stringify(cartPayload()),
+          });
+          Storefront.updateCartBadge(cart.items_count);
+          addBtn.textContent = "Added ✓";
+          setTimeout(() => (addBtn.innerHTML = originalHtml), 2000);
+        } catch (err) {
+          Storefront.showError(errorEl, err.message);
+          addBtn.innerHTML = originalHtml;
+        } finally {
+          addBtn.disabled = false;
+        }
+      });
+    }
+
+    if (buyNowBtn) {
+      buyNowBtn.addEventListener("click", async () => {
+        Storefront.hideError(errorEl);
+        buyNowBtn.disabled = true;
+        const originalHtml = buyNowBtn.innerHTML;
+        buyNowBtn.innerHTML = '<span class="spinner"></span> Adding...';
+        try {
+          await Storefront.apiFetch("/cart/items/", {
+            method: "POST",
+            body: JSON.stringify(cartPayload()),
+          });
+          window.location.href = window.CHECKOUT_URL;
+        } catch (err) {
+          Storefront.showError(errorEl, err.message);
+          buyNowBtn.innerHTML = originalHtml;
+          buyNowBtn.disabled = false;
+        }
+      });
+    }
+  }
+
+  const shareBtn = document.getElementById("share-btn");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+      const url = window.location.href;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: document.title, url });
+        } catch (err) {
+          /* user cancelled the share sheet */
+        }
+        return;
+      }
       try {
-        await Storefront.apiFetch("/cart/items/", {
-          method: "POST",
-          body: JSON.stringify({
-            product: productId,
-            variant: variantSelect ? Number(variantSelect.value) : null,
-            quantity: Math.max(1, Number(quantityInput.value) || 1),
-          }),
-        });
-        addBtn.textContent = "Added ✓";
-        setTimeout(() => (addBtn.innerHTML = originalHtml), 2000);
+        await navigator.clipboard.writeText(url);
+        const original = shareBtn.textContent;
+        shareBtn.textContent = "✓";
+        setTimeout(() => (shareBtn.textContent = original), 1500);
       } catch (err) {
-        Storefront.showError(errorEl, err.message);
-        addBtn.innerHTML = originalHtml;
-      } finally {
-        addBtn.disabled = false;
+        window.prompt("Copy this link:", url);
       }
     });
   }

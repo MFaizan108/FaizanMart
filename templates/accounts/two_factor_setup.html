@@ -5,12 +5,12 @@
 <p class="text-sm text-black/60">
     Scan this in your authenticator app (Google Authenticator, Authy, ...), or enter the secret manually:
 </p>
-<img src="data:image/png;base64,{{ qr_base64 }}" alt="2FA QR code" width="200" height="200" class="self-center">
+<img src="data:image/png;base64,{{ qr_base64 }}" alt="2FA QR code" width="200" height="200" class="mx-auto self-center rounded-xl border border-black/10 p-2">
 <p class="break-all rounded-md bg-black/5 px-3 py-2 font-mono text-xs">{{ secret }}</p>
 <p class="break-all text-xs text-black/40">{{ provisioning_uri }}</p>
 <form method="post" class="flex flex-col gap-4">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn-primary">Confirm &amp; enable</button>
+    <button type="submit" class="btn-primary w-full justify-center">Confirm &amp; enable</button>
 </form>
 {% endblock %}

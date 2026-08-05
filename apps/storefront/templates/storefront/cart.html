@@ -5,8 +5,8 @@
 
 {% block content %}
 <div class="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8">
-    <h1 class="text-2xl font-bold">Your Cart</h1>
-    <p id="cart-error" class="hidden text-sm text-red-600"></p>
+    <h1 class="text-2xl font-bold text-secondary">Your Cart</h1>
+    <p id="cart-error" class="hidden text-sm text-danger"></p>
     <div id="cart-loading" class="flex flex-col gap-8 lg:flex-row lg:items-start">
         <div class="card flex flex-1 flex-col gap-1 p-4">
             {% for _ in "123" %}
@@ -24,27 +24,37 @@
     </div>
 
     <div id="cart-empty" class="hidden fade-in flex-col items-center gap-3 py-16 text-center">
-        <span class="text-5xl">🛒</span>
+        <span class="empty-icon">🛒</span>
         <p class="text-lg font-medium">Your cart is empty</p>
         <p class="text-sm text-black/50">Looks like you haven't added anything yet. Start exploring our products.</p>
         <a href="{% url 'storefront:product_list' %}" class="btn-primary mt-2">Browse products</a>
     </div>
 
     <div id="cart-content" class="hidden fade-in flex-col gap-8 lg:flex-row lg:items-start">
-        <div id="cart-groups" class="flex flex-1 flex-col gap-6"></div>
+        <div class="flex flex-1 flex-col gap-6">
+            <div id="cart-groups" class="flex flex-col gap-6"></div>
+            <a href="{% url 'storefront:product_list' %}" class="w-fit text-sm font-medium text-brand hover:underline">&larr; Continue shopping</a>
+        </div>
 
-        <aside class="flex w-full flex-col gap-4 rounded-xl border border-black/10 p-4 lg:w-72">
+        <aside class="card sticky top-24 flex w-full flex-col gap-4 p-5 lg:w-80">
             <h2 class="text-lg font-semibold">Order Summary</h2>
             <div class="flex justify-between text-sm text-black/60">
                 <span>Items</span>
                 <span id="cart-items-count"></span>
             </div>
-            <div class="flex justify-between border-t border-black/10 pt-3 text-lg font-semibold">
+            <div class="flex justify-between text-sm text-black/60">
+                <span>Shipping &amp; taxes</span>
+                <span class="text-black/40">Calculated at checkout</span>
+            </div>
+            <div class="flex justify-between border-t border-black/10 pt-3 text-lg font-semibold text-secondary">
                 <span>Subtotal</span>
                 <span>Rs <span id="cart-subtotal"></span></span>
             </div>
-            <a href="{% url 'storefront:checkout' %}" class="btn-primary w-full text-center">Proceed to Checkout</a>
-            <button id="clear-cart-btn" type="button" class="text-sm text-black/50 hover:underline">Clear cart</button>
+            <a href="{% url 'storefront:checkout' %}" class="btn-primary w-full justify-center">Proceed to Checkout</a>
+            <button id="clear-cart-btn" type="button" class="text-sm text-black/50 hover:text-danger hover:underline">Clear cart</button>
+            <div class="flex items-center gap-2 border-t border-black/10 pt-4 text-xs text-black/40">
+                <span>🔒</span> Secure checkout &amp; buyer protection on every order
+            </div>
         </aside>
     </div>
 </div>
@@ -62,17 +72,21 @@
 </template>
 
 <template id="cart-item-template">
-    <div class="flex items-center gap-4 py-4">
-        <a class="item-image flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-black/5 text-2xl text-black/20" href="#">📦</a>
-        <div class="flex flex-1 flex-col">
-            <a class="item-name font-medium hover:text-brand" href="#"></a>
-            <span class="item-variant text-sm text-black/50"></span>
-            <span class="item-unit-price text-sm text-black/50"></span>
+    <div class="flex flex-wrap items-center gap-4 py-4">
+        <div class="flex min-w-0 flex-1 items-center gap-4">
+            <a class="item-image flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-black/5 text-2xl text-black/20" href="#">📦</a>
+            <div class="flex min-w-0 flex-1 flex-col">
+                <a class="item-name truncate font-medium hover:text-brand" href="#"></a>
+                <span class="item-variant text-sm text-black/50"></span>
+                <span class="item-unit-price text-sm text-black/50"></span>
+            </div>
         </div>
-        <input type="number" min="1" class="item-quantity w-16 rounded-md border border-black/15 px-2 py-1 text-sm">
-        <span class="item-line-total w-24 text-right font-medium"></span>
-        <button type="button" class="item-wishlist-btn btn-icon" aria-label="Save for later">🤍</button>
-        <button type="button" class="item-remove text-sm text-red-600 hover:underline">Remove</button>
+        <div class="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
+            <input type="number" min="1" class="item-quantity w-16 shrink-0 rounded-md border border-black/15 px-2 py-1 text-sm">
+            <span class="item-line-total w-20 shrink-0 text-right font-medium text-secondary sm:w-24"></span>
+            <button type="button" class="item-wishlist-btn btn-icon shrink-0" aria-label="Save for later">🤍</button>
+            <button type="button" class="item-remove shrink-0 text-sm text-danger hover:underline">Remove</button>
+        </div>
     </div>
 </template>
 {% endblock %}

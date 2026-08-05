@@ -1,71 +1,155 @@
 {% extends "storefront/_account_base.html" %}
-{% load humanize %}
+{% load static humanize %}
 
 {% block title %}My Account — FaizanMart{% endblock %}
 
 {% block account_content %}
 <div class="flex flex-col gap-6">
-    <h1 class="text-2xl font-bold">Welcome back, {{ user.get_short_name }}</h1>
+    <h1 class="text-2xl font-bold text-secondary">Welcome back, {{ user.get_short_name }}</h1>
 
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div class="card p-4">
+        <div class="card hover-lift p-4">
             <p class="text-xs text-black/50">Total Orders</p>
-            <p class="mt-1 text-2xl font-bold">{{ total_orders }}</p>
+            <p class="mt-1 text-2xl font-bold text-secondary">{{ total_orders }}</p>
         </div>
-        <div class="card p-4">
+        <div class="card hover-lift p-4">
             <p class="text-xs text-black/50">Pending</p>
-            <p class="mt-1 text-2xl font-bold">{{ pending_orders }}</p>
+            <p class="mt-1 text-2xl font-bold text-secondary">{{ pending_orders }}</p>
         </div>
-        <div class="card p-4">
+        <div class="card hover-lift p-4">
             <p class="text-xs text-black/50">Completed</p>
-            <p class="mt-1 text-2xl font-bold">{{ completed_orders }}</p>
+            <p class="mt-1 text-2xl font-bold text-success">{{ completed_orders }}</p>
         </div>
-        <div class="card p-4">
+        <div class="card hover-lift p-4">
             <p class="text-xs text-black/50">Wallet Balance</p>
-            <p class="mt-1 text-2xl font-bold">Rs {{ wallet_balance|floatformat:0|intcomma }}</p>
+            <p class="mt-1 text-2xl font-bold text-brand">Rs {{ wallet_balance|floatformat:0|intcomma }}</p>
         </div>
     </div>
 
-    <section class="flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Recent Orders</h2>
-            <a href="{% url 'storefront:order_list' %}" class="text-sm font-medium text-brand hover:underline">View all</a>
-        </div>
+    <!-- Quick actions -->
+    <section class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <a href="{% url 'storefront:order_list' %}" class="card hover-lift flex flex-col items-center gap-2 p-4 text-center">
+            <span class="text-2xl">📦</span>
+            <span class="text-xs font-medium text-black/70">Orders</span>
+        </a>
+        <a href="{% url 'storefront:wishlist' %}" class="card hover-lift relative flex flex-col items-center gap-2 p-4 text-center">
+            {% if wishlist_count %}<span class="badge badge-sale absolute right-2 top-2">{{ wishlist_count }}</span>{% endif %}
+            <span class="text-2xl">🤍</span>
+            <span class="text-xs font-medium text-black/70">Wishlist</span>
+        </a>
+        <a href="{% url 'storefront:wallet' %}" class="card hover-lift flex flex-col items-center gap-2 p-4 text-center">
+            <span class="text-2xl">👛</span>
+            <span class="text-xs font-medium text-black/70">Wallet</span>
+        </a>
+        <a href="#available-coupons" class="card hover-lift flex flex-col items-center gap-2 p-4 text-center">
+            <span class="text-2xl">🎟️</span>
+            <span class="text-xs font-medium text-black/70">Coupons</span>
+        </a>
+        <a href="{% url 'storefront:returns' %}" class="card hover-lift relative flex flex-col items-center gap-2 p-4 text-center">
+            {% if pending_returns_count %}<span class="badge badge-warning absolute right-2 top-2">{{ pending_returns_count }}</span>{% endif %}
+            <span class="text-2xl">↩️</span>
+            <span class="text-xs font-medium text-black/70">Returns</span>
+        </a>
+        <a href="{% url 'storefront:notifications' %}" class="card hover-lift relative flex flex-col items-center gap-2 p-4 text-center">
+            {% if unread_notifications_count %}<span class="badge badge-sale absolute right-2 top-2">{{ unread_notifications_count }}</span>{% endif %}
+            <span class="text-2xl">🔔</span>
+            <span class="text-xs font-medium text-black/70">Notifications</span>
+        </a>
+    </section>
 
-        {% if recent_orders %}
-        <div class="overflow-x-auto rounded-xl border border-black/10">
-            <table class="w-full text-left text-sm">
-                <thead>
-                    <tr class="border-b border-black/10 text-xs uppercase text-black/40">
-                        <th class="p-3">Order</th>
-                        <th class="p-3">Seller</th>
-                        <th class="p-3">Total</th>
-                        <th class="p-3">Status</th>
-                        <th class="p-3">Placed</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for order in recent_orders %}
-                    <tr class="border-b border-black/5 last:border-0 hover:bg-black/[.02]">
-                        <td class="p-3">
-                            <a href="{% url 'storefront:order_detail' order.id %}" class="font-medium text-brand hover:underline">{{ order.order_number }}</a>
-                        </td>
-                        <td class="p-3 text-black/60">{{ order.store.name }}</td>
-                        <td class="p-3 font-medium">Rs {{ order.total_amount|floatformat:0|intcomma }}</td>
-                        <td class="p-3"><span class="badge capitalize">{{ order.get_status_display }}</span></td>
-                        <td class="p-3 text-black/50">{{ order.created_at|date:"M j, Y" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Recent orders -->
+        <section class="flex flex-col gap-3 lg:col-span-2">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-secondary">Recent Orders</h2>
+                <a href="{% url 'storefront:order_list' %}" class="text-sm font-medium text-brand hover:underline">View all</a>
+            </div>
+
+            {% if recent_orders %}
+            <div class="card overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-black/10 text-xs uppercase text-black/40">
+                            <th class="p-3">Order</th>
+                            <th class="p-3">Seller</th>
+                            <th class="p-3">Total</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Placed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr class="border-b border-black/5 last:border-0 hover:bg-black/[.02]">
+                            <td class="p-3">
+                                <a href="{% url 'storefront:order_detail' order.id %}" class="font-medium text-brand hover:underline">{{ order.order_number }}</a>
+                            </td>
+                            <td class="p-3 text-black/60">{{ order.store.name }}</td>
+                            <td class="p-3 font-medium">Rs {{ order.total_amount|floatformat:0|intcomma }}</td>
+                            <td class="p-3"><span class="badge capitalize {% if order.status == 'delivered' %}badge-new{% elif order.status == 'cancelled' %}badge-outofstock{% else %}badge-warning{% endif %}">{{ order.get_status_display }}</span></td>
+                            <td class="p-3 text-black/50">{{ order.created_at|date:"M j, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="card flex flex-col items-center gap-3 p-12 text-center">
+                <span class="empty-icon">📦</span>
+                <p class="text-black/50">You haven't placed any orders yet.</p>
+                <a href="{% url 'storefront:product_list' %}" class="btn-primary">Browse products</a>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Spending chart -->
+        <section class="card flex flex-col gap-4 p-5">
+            <h2 class="text-lg font-semibold text-secondary">Spending — last 6 months</h2>
+            {% if max_monthly_spend > 1 %}
+            <div class="flex h-40 items-end justify-between gap-2">
+                {% for month in monthly_spend %}
+                <div class="flex flex-1 flex-col items-center gap-2">
+                    <div class="flex h-32 w-full items-end">
+                        <div class="hover-lift w-full rounded-t-md bg-gradient-to-t from-brand to-brand-dark"
+                             style="height: {% widthratio month.total max_monthly_spend 100 %}%; min-height: {% if month.total > 0 %}4px{% else %}0{% endif %};"
+                             title="Rs {{ month.total|floatformat:0|intcomma }}"></div>
+                    </div>
+                    <span class="text-[11px] text-black/40">{{ month.label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center gap-2 py-8 text-center">
+                <span class="empty-icon">📊</span>
+                <p class="text-sm text-black/50">Your spending history will appear here once you place an order.</p>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Available coupons -->
+    <section id="available-coupons" class="flex flex-col gap-3">
+        <h2 class="text-lg font-semibold text-secondary">Available Coupons</h2>
+        <div id="coupons-loading" class="text-sm text-black/40">Loading coupons…</div>
+        <div id="coupons-empty" class="hidden card flex-col items-center gap-2 p-8 text-center">
+            <span class="empty-icon">🎟️</span>
+            <p class="text-sm text-black/50">No active coupons right now — check back soon.</p>
         </div>
-        {% else %}
-        <div class="card flex flex-col items-center gap-3 p-12 text-center">
-            <span class="text-4xl">📦</span>
-            <p class="text-black/50">You haven't placed any orders yet.</p>
-            <a href="{% url 'storefront:product_list' %}" class="btn-primary">Browse products</a>
-        </div>
-        {% endif %}
+        <div id="coupons-list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
     </section>
 </div>
+
+<template id="coupon-card-template">
+    <div class="card flex items-center gap-3 border-dashed p-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xl">🎟️</div>
+        <div class="flex-1">
+            <p class="coupon-code font-mono font-bold text-secondary"></p>
+            <p class="coupon-desc text-xs text-black/50"></p>
+        </div>
+        <button type="button" class="coupon-copy-btn btn-icon border border-black/10 text-xs" title="Copy code">Copy</button>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/account_dashboard.js' %}"></script>
 {% endblock %}
