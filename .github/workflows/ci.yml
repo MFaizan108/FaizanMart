@@ -83,6 +83,14 @@ jobs:
           pip install coverage
       - name: Run migrations check
         run: python manage.py makemigrations --check --dry-run --settings=FaizanMart.settings.test
+      - name: Create Elasticsearch indices
+        # Elasticsearch auto-creates an index on first write with default settings if it
+        # doesn't already exist yet — that silently skips the custom synonym analyzer and
+        # keyword sub-fields declared in apps/catalog/documents.py, breaking any search
+        # test that depends on them (confirmed by reproducing against a freshly-deleted
+        # local index: 3 of the 3 catalog search failures went away once the index was
+        # created via this command first).
+        run: python manage.py search_index --create -f --settings=FaizanMart.settings.test
       - name: Run test suite with coverage
         run: |
           coverage run --source=apps --omit='*/migrations/*,*/tests*,*/tests_*' manage.py test --settings=FaizanMart.settings.test --noinput

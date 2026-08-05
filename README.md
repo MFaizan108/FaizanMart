@@ -149,6 +149,7 @@ via `drf-spectacular`, so it always matches the code.
 git clone <repo-url> faizanmart && cd faizanmart
 cp .env.example .env          # fill in SECRET_KEY at minimum; defaults work for local dev
 docker compose up -d --build
+docker compose exec web python manage.py search_index --create -f   # one-time: creates the ES index with its synonym analyzer
 docker compose exec web python manage.py createsuperuser   # or: docker compose exec web python manage.py seed_demo
 ```
 
@@ -162,6 +163,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # start Postgres/Redis/Elasticsearch yourself, or: docker compose up -d db redis elasticsearch
 python manage.py migrate
+python manage.py search_index --create -f   # one-time: creates the ES index with its synonym analyzer
 python manage.py seed_demo        # optional — see Demo Accounts below
 python manage.py runserver
 ```
