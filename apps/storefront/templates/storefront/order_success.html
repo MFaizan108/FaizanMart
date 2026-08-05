@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order Placed — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-16 text-center">
+    <span class="flex h-16 w-16 items-center justify-center rounded-full bg-brand/10 text-3xl text-brand">✓</span>
+    <div id="order-success-known" class="hidden flex-col items-center gap-2">
+        <h1 class="text-2xl font-bold">Thank you! Your order has been placed.</h1>
+        <p class="text-black/60">A confirmation has been recorded for the order(s) below.</p>
+        <div id="order-list" class="mt-4 flex w-full flex-col gap-2"></div>
+    </div>
+    <div id="order-success-fallback" class="hidden flex-col items-center gap-2">
+        <h1 class="text-2xl font-bold">Order placed successfully.</h1>
+        <p class="text-black/60">You can view the details from your order history.</p>
+    </div>
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+        <a id="view-order-btn" href="{% url 'storefront:order_list' %}" class="btn-primary hidden">View Order</a>
+        <a href="{% url 'storefront:order_list' %}" class="btn-secondary">Track Order</a>
+        <a href="{% url 'storefront:product_list' %}" class="btn-secondary">Continue Shopping</a>
+    </div>
+</div>
+
+<template id="order-row-template">
+    <div class="flex items-center justify-between rounded-lg border border-black/10 px-4 py-3 text-sm">
+        <span class="order-number font-medium"></span>
+        <span class="order-status badge"></span>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/order_success.js' %}"></script>
+{% endblock %}

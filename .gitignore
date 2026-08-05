@@ -43,3 +43,7 @@ celerybeat-schedule*
 # OS
 .DS_Store
 Thumbs.db
+
+# Tailwind CSS (standalone CLI binary + compiled output — see README for the build command)
+/bin/tailwindcss*
+/static/css/output.css

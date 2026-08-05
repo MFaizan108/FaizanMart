@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout — FaizanMart{% endblock %}
+
+{% block content %}
+<p id="checkout-loading" class="mx-auto max-w-2xl px-4 py-16 text-center text-black/50">Loading...</p>
+
+<div id="checkout-empty" class="mx-auto hidden max-w-2xl flex-col items-center gap-4 px-4 py-16 text-center">
+    <p class="text-black/50">Your cart is empty.</p>
+    <a href="{% url 'storefront:product_list' %}" class="btn-primary">Browse products</a>
+</div>
+
+<div id="checkout-content" class="mx-auto hidden max-w-5xl flex-col gap-8 px-4 py-8">
+
+    <!-- Step indicator -->
+    <ol class="mx-auto flex w-full max-w-lg items-center gap-2 text-xs font-medium text-black/40">
+        <li class="checkout-step flex flex-1 items-center gap-2" data-step="address">
+            <span class="step-dot flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white">1</span>
+            <span class="step-label text-black">Address</span>
+            <span class="h-px flex-1 bg-black/10"></span>
+        </li>
+        <li class="checkout-step flex flex-1 items-center gap-2" data-step="payment">
+            <span class="step-dot flex h-6 w-6 items-center justify-center rounded-full bg-black/10">2</span>
+            <span class="step-label">Payment</span>
+            <span class="h-px flex-1 bg-black/10"></span>
+        </li>
+        <li class="checkout-step flex items-center gap-2" data-step="review">
+            <span class="step-dot flex h-6 w-6 items-center justify-center rounded-full bg-black/10">3</span>
+            <span class="step-label">Review</span>
+        </li>
+    </ol>
+
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div class="flex flex-col gap-6 md:col-span-2">
+
+            <!-- Step 1: Address -->
+            <section id="step-address" class="checkout-panel flex flex-col gap-3">
+                <h2 class="text-lg font-semibold">Shipping address</h2>
+                <div id="address-list" class="flex flex-col gap-2"></div>
+                <button id="toggle-address-form" type="button" class="w-fit text-sm text-brand hover:underline">+ Add new address</button>
+
+                <form id="address-form" class="hidden flex-col gap-3 rounded-lg border border-black/10 p-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input name="full_name" required placeholder="Full name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                        <input name="phone_number" required placeholder="Phone number" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                    </div>
+                    <input name="address_line1" required placeholder="Address line 1" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                    <div class="grid grid-cols-3 gap-3">
+                        <input name="city" required placeholder="City" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                        <input name="state" placeholder="State" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                        <input name="country" required placeholder="Country" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                    </div>
+                    <button type="submit" class="w-fit rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+                        Save address
+                    </button>
+                </form>
+
+                <button type="button" class="step-next-btn btn-primary mt-2 w-fit" data-next="payment" disabled>
+                    Continue to Payment
+                </button>
+            </section>
+
+            <!-- Step 2: Payment -->
+            <section id="step-payment" class="checkout-panel hidden flex-col gap-3">
+                <h2 class="text-lg font-semibold">Payment method</h2>
+                <label class="flex items-center gap-3 rounded-lg border border-brand p-3 text-sm">
+                    <input type="radio" checked disabled>
+                    Cash on Delivery
+                </label>
+                <p class="text-xs text-black/40">
+                    Card and mobile-wallet payments require gateway credentials that aren't configured in this environment yet.
+                </p>
+                <div class="flex gap-2">
+                    <button type="button" class="step-back-btn btn-secondary" data-back="address">Back</button>
+                    <button type="button" class="step-next-btn btn-primary" data-next="review">Continue to Review</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Review -->
+            <section id="step-review" class="checkout-panel hidden flex-col gap-4">
+                <h2 class="text-lg font-semibold">Review your order</h2>
+                <div class="flex flex-col gap-1 rounded-lg border border-black/10 p-3 text-sm">
+                    <span class="font-medium">Shipping to</span>
+                    <span id="review-address" class="text-black/60"></span>
+                </div>
+                <div class="flex flex-col gap-1 rounded-lg border border-black/10 p-3 text-sm">
+                    <span class="font-medium">Payment method</span>
+                    <span class="text-black/60">Cash on Delivery</span>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="coupon-code" class="text-sm font-medium">Coupon code</label>
+                    <input id="coupon-code" placeholder="Optional" class="w-fit rounded-md border border-black/15 px-3 py-2 text-sm">
+                </div>
+                <button type="button" class="step-back-btn btn-secondary w-fit" data-back="payment">Back</button>
+            </section>
+        </div>
+
+        <aside class="flex flex-col gap-4 rounded-xl border border-black/10 p-4">
+            <h2 class="text-lg font-semibold">Order summary</h2>
+            <div id="summary-items" class="flex flex-col gap-2 text-sm"></div>
+            <div class="flex justify-between border-t border-black/10 pt-3 font-semibold">
+                <span>Subtotal</span>
+                <span>Rs <span id="summary-subtotal"></span></span>
+            </div>
+            <p class="text-xs text-black/40">Shipping and any discount are calculated on the server when you place the order.</p>
+            <p id="checkout-error" class="hidden text-sm text-red-600"></p>
+            <button id="place-order-btn" type="button" disabled class="hidden rounded-md bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark disabled:opacity-60">
+                Place order
+            </button>
+        </aside>
+    </div>
+</div>
+
+<template id="address-option-template">
+    <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-black/10 p-3 text-sm has-[:checked]:border-brand">
+        <input type="radio" name="address" class="address-radio mt-1">
+        <span>
+            <span class="address-label block font-medium"></span>
+            <span class="address-line block text-black/60"></span>
+        </span>
+    </label>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/checkout.js' %}"></script>
+{% endblock %}

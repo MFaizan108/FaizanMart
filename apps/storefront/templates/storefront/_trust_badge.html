@@ -1,0 +1,27 @@
+<div class="flex items-center gap-3">
+    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+        {% if icon == "truck" %}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h10v9H3zM13 10h4l3 3v3h-7zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/>
+        </svg>
+        {% elif icon == "return" %}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M4.5 15a8 8 0 1 0 2-8.4L4 10"/>
+        </svg>
+        {% elif icon == "shield" %}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3.5 5 6v6c0 4.5 3 7.5 7 8.5 4-1 7-4 7-8.5V6l-7-2.5Z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9.5 12 1.8 1.8L14.8 10"/>
+        </svg>
+        {% else %}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
+            <circle cx="12" cy="12" r="8.25"/>
+            <path stroke-linecap="round" d="M12 7.5v5l3 1.75"/>
+        </svg>
+        {% endif %}
+    </span>
+    <div>
+        <p class="text-sm font-semibold">{{ title }}</p>
+        <p class="text-xs text-black/50">{{ desc }}</p>
+    </div>
+</div>

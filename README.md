@@ -67,6 +67,7 @@ limiting, audit logging) from the start rather than bolted on at the end.
 | Layer | Choice |
 |---|---|
 | Language / Framework | Python 3.13, Django 6.0, Django REST Framework |
+| Storefront frontend | Server-rendered Django templates (`apps/storefront`) + Tailwind CSS + vanilla JS `fetch()` against the same DRF API, session-authenticated |
 | Auth | `djangorestframework-simplejwt` (JWT + blacklist), Google OAuth, TOTP 2FA |
 | Database | PostgreSQL 16 |
 | Cache / Broker | Redis 7 |
@@ -186,6 +187,47 @@ With coverage:
 ```bash
 coverage run --source=apps --omit='*/migrations/*,*/tests*,*/tests_*' manage.py test --settings=FaizanMart.settings.test
 coverage report -m
+```
+
+## Storefront
+
+The customer-facing storefront (`apps/storefront`) is server-rendered Django templates —
+home, product listing/detail, cart, wishlist, checkout, and order history — styled with
+Tailwind CSS. Interactive bits (add to cart, wishlist toggle, live filters, quantity
+updates, review submission) call the *same* DRF API the rest of the project already
+exposes, via a small vanilla-JS `fetch()` wrapper (`apps/storefront/static/storefront/js/`)
+authenticated with the normal Django session cookie + CSRF token — no separate JWT
+handling needed for same-origin browser requests (`rest_framework.authentication.
+SessionAuthentication` is enabled alongside JWT for exactly this).
+
+Registration, login, 2FA, and password reset reuse the existing session-based views in
+`apps/accounts/views.py`.
+
+### Building the CSS
+
+Tailwind is compiled with the [standalone CLI](https://tailwindcss.com/blog/standalone-cli)
+(a single binary — no Node/npm required). One-time setup:
+
+```bash
+curl -fL -o bin/tailwindcss.exe https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-windows-x64.exe
+# macOS: .../tailwindcss-macos-x64 (or -arm64)  ·  Linux: .../tailwindcss-linux-x64
+```
+
+Then, whenever `static_src/css/input.css` or a template's class names change:
+
+```bash
+./bin/tailwindcss -i ./static_src/css/input.css -o ./static/css/output.css   # one-off
+./bin/tailwindcss -i ./static_src/css/input.css -o ./static/css/output.css --watch  # dev
+./bin/tailwindcss -i ./static_src/css/input.css -o ./static/css/output.css --minify # prod
+```
+
+Static files use WhiteNoise's `CompressedManifestStaticFilesStorage`, which is
+manifest-strict — after touching *any* file under `static/` or an app's `static/`
+directory (new JS file, rebuilt CSS), re-run `collectstatic` or `{% static %}` will 404
+on files missing from the manifest:
+
+```bash
+python manage.py collectstatic --noinput
 ```
 
 ## AI Shopping Assistant

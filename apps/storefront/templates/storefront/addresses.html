@@ -1,0 +1,57 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}My Addresses — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">My addresses</h1>
+        <button id="toggle-address-form" type="button" class="btn-primary">+ Add address</button>
+    </div>
+
+    <form id="address-form" class="hidden card flex-col gap-3 p-4">
+        <div class="grid grid-cols-2 gap-3">
+            <input name="label" placeholder="Label (e.g. Home, Office)" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <input name="full_name" required placeholder="Full name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <input name="phone_number" required placeholder="Phone number" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <input name="postal_code" placeholder="Postal code" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        </div>
+        <input name="address_line1" required placeholder="Address line 1" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        <input name="address_line2" placeholder="Address line 2 (optional)" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        <div class="grid grid-cols-3 gap-3">
+            <input name="city" required placeholder="City" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <input name="state" placeholder="State" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <input name="country" required placeholder="Country" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        </div>
+        <p id="address-error" class="hidden text-sm text-red-600"></p>
+        <button type="submit" class="btn-primary">Save address</button>
+    </form>
+
+    <p id="addresses-loading" class="text-black/50">Loading addresses...</p>
+    <div id="addresses-empty" class="hidden card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">📍</span>
+        <p class="text-black/50">You haven't saved any addresses yet.</p>
+    </div>
+    <div id="addresses-list" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+</div>
+
+<template id="address-card-template">
+    <div class="card flex flex-col gap-1 p-4">
+        <div class="flex items-center justify-between">
+            <span class="address-label font-semibold"></span>
+            <button type="button" class="remove-btn text-sm text-red-600 hover:underline">Remove</button>
+        </div>
+        <span class="address-name text-sm"></span>
+        <span class="address-phone text-sm text-black/60"></span>
+        <span class="address-lines text-sm text-black/60"></span>
+        <div class="default-badges mt-1 flex gap-1"></div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/addresses.js' %}"></script>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends "accounts/base.html" %}
 {% block title %}Continue with Google{% endblock %}
-{% block content %}
-<h1>Continue with Google</h1>
+{% block auth_title %}Continue with Google{% endblock %}
+{% block auth_content %}
 {% if google_client_id %}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <div id="g_id_onload"
@@ -21,7 +21,11 @@
     }
 </script>
 {% else %}
-<p>Google login is not configured yet. Set <code>GOOGLE_OAUTH_CLIENT_ID</code> in <code>.env</code>.</p>
+<p class="text-sm text-black/60">
+    Google login is not configured yet. Set <code class="rounded bg-black/5 px-1">GOOGLE_OAUTH_CLIENT_ID</code> in <code class="rounded bg-black/5 px-1">.env</code>.
+</p>
 {% endif %}
-<p><a href="{% url 'accounts:login' %}">Back to log in</a></p>
+<p class="text-sm text-black/60">
+    <a href="{% url 'accounts:login' %}" class="text-brand hover:underline">Back to log in</a>
+</p>
 {% endblock %}

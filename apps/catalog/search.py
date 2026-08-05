@@ -47,9 +47,18 @@ def parse_smart_query(query_text):
     return " ".join(remaining), filters
 
 
+SORT_FIELDS = {
+    "newest": {"created_at": {"order": "desc"}},
+    "price_asc": {"price": {"order": "asc"}},
+    "price_desc": {"price": {"order": "desc"}},
+    "rating": {"avg_rating": {"order": "desc"}},
+    "popular": {"review_count": {"order": "desc"}},
+}
+
+
 def search_products(
     *, query="", category=None, brand=None, min_price=None, max_price=None,
-    min_rating=None, in_stock_only=False, page=1, page_size=20,
+    min_rating=None, in_stock_only=False, sort=None, page=1, page_size=20,
 ):
     search = ProductDocument.search().filter("term", status="published")
 
@@ -81,6 +90,9 @@ def search_products(
         search = search.filter("range", avg_rating={"gte": float(min_rating)})
     if in_stock_only:
         search = search.filter("term", is_available=True)
+
+    if sort in SORT_FIELDS:
+        search = search.sort(SORT_FIELDS[sort])
 
     start = (page - 1) * page_size
     search = search[start:start + page_size]

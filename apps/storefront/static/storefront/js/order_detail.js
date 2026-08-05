@@ -1,0 +1,68 @@
+(function () {
+  const root = document.getElementById("order-root");
+  const orderId = root.dataset.orderId;
+  const loadingEl = document.getElementById("order-loading");
+  const errorEl = document.getElementById("order-error");
+  const contentEl = document.getElementById("order-content");
+  const template = document.getElementById("order-content-template");
+
+  function fmt(amount) {
+    return "Rs " + Math.round(Number(amount)).toLocaleString("en-PK");
+  }
+
+  function render(order) {
+    const node = template.content.cloneNode(true);
+    node.querySelector(".order-number").textContent = order.order_number;
+    node.querySelector(".order-status").textContent = order.status;
+
+    node.querySelector(".items-heading").textContent = "Items from " + order.store_name;
+    const itemsList = node.querySelector(".items-list");
+    order.items.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "flex justify-between py-2 text-sm";
+      row.innerHTML = `<span>${item.product_name} &times; ${item.quantity}</span><span>${fmt(item.line_total)}</span>`;
+      itemsList.appendChild(row);
+    });
+
+    const totals = node.querySelector(".totals");
+    const rows = [["Subtotal", fmt(order.subtotal)], ["Shipping", fmt(order.shipping_cost)]];
+    if (Number(order.discount_amount) > 0) rows.push(["Discount", "-" + fmt(order.discount_amount)]);
+    rows.push(["Total", fmt(order.total_amount)]);
+    rows.forEach(([label, value], index) => {
+      const row = document.createElement("div");
+      row.className = "flex justify-between" + (index === rows.length - 1 ? " font-semibold" : "");
+      row.innerHTML = `<span>${label}</span><span>${value}</span>`;
+      totals.appendChild(row);
+    });
+
+    node.querySelector(".shipping-address").innerHTML =
+      `${order.shipping_full_name} &middot; ${order.shipping_phone}<br>` +
+      `${order.shipping_address_line}, ${order.shipping_city} ${order.shipping_state}<br>${order.shipping_country}`;
+    node.querySelector(".payment-line").innerHTML =
+      `Payment: <span class="capitalize">${order.payment_method}</span> &middot; <span class="capitalize">${order.payment_status}</span>`;
+
+    const historyEl = node.querySelector(".status-history");
+    order.status_history.forEach((entry) => {
+      const row = document.createElement("div");
+      row.className = "flex justify-between";
+      row.innerHTML = `<span class="capitalize">${entry.status}</span><span class="text-black/50">${new Date(entry.created_at).toLocaleString()}</span>`;
+      historyEl.appendChild(row);
+    });
+
+    contentEl.innerHTML = "";
+    contentEl.appendChild(node);
+    contentEl.classList.remove("hidden");
+    contentEl.classList.add("flex");
+  }
+
+  Storefront.apiFetch(`/orders/orders/${orderId}/`)
+    .then((order) => {
+      loadingEl.classList.add("hidden");
+      render(order);
+    })
+    .catch((err) => {
+      loadingEl.classList.add("hidden");
+      errorEl.textContent = err.status === 404 ? "Order not found." : err.message;
+      errorEl.classList.remove("hidden");
+    });
+})();

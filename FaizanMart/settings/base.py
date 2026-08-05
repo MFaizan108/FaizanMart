@@ -31,6 +31,7 @@ DJANGO_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
+    "django.contrib.humanize",
 ]
 
 THIRD_PARTY_APPS = [
@@ -63,6 +64,7 @@ LOCAL_APPS = [
     "apps.marketing",
     "apps.chat",
     "apps.assistant",
+    "apps.storefront",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -96,6 +98,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.storefront.context_processors.cart",
             ],
         },
     },
@@ -245,6 +248,10 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # Lets the server-rendered storefront (apps.storefront) call these same API
+        # endpoints via fetch() using the normal Django session cookie + CSRF token,
+        # instead of juggling a separate JWT for same-origin browser requests.
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -289,6 +296,12 @@ SPECTACULAR_SETTINGS = {
 # CORS
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+
+from corsheaders.defaults import default_headers  # noqa: E402
+
+# X-Cart-Token carries the guest cart identifier (apps/cart/services.py) — not part of the
+# default cors-headers allowlist, so cross-origin browser clients need it added explicitly.
+CORS_ALLOW_HEADERS = [*default_headers, "x-cart-token"]
 
 
 # Security headers

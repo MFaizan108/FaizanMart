@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}{{ product.name }} — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-8">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="-mb-4 text-xs text-black/50">
+        <a href="{% url 'storefront:home' %}" class="hover:text-brand">Home</a>
+        <span aria-hidden="true"> / </span>
+        {% if product.category %}
+        <a href="{% url 'storefront:product_list' %}?category={{ product.category.name|urlencode }}" class="hover:text-brand">{{ product.category.name }}</a>
+        <span aria-hidden="true"> / </span>
+        {% endif %}
+        <span class="text-black/70">{{ product.name }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <!-- Gallery -->
+        <div class="flex flex-col gap-3">
+            <div id="gallery-main" class="group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-black/5 text-black/30">
+                {% if primary_image %}
+                <img id="gallery-main-img" src="{{ primary_image.image.url }}" alt="{{ product.name }}"
+                     class="h-full w-full object-cover transition duration-300 group-hover:scale-110">
+                {% else %}
+                <span id="gallery-main-img" class="text-6xl">📦</span>
+                {% endif %}
+            </div>
+            {% if product.images.all|length > 1 %}
+            <div class="flex flex-wrap gap-2">
+                {% for image in product.images.all %}
+                <button type="button" class="gallery-thumb h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 {% if forloop.first %}border-brand{% else %}border-transparent{% endif %} bg-black/5"
+                        data-full="{{ image.image.url }}">
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" class="h-full w-full object-cover">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="flex flex-col gap-4">
+            {% if product.category %}
+            <span class="text-sm uppercase tracking-wide text-black/40">{{ product.category.name }}</span>
+            {% endif %}
+            <h1 class="text-2xl font-bold">{{ product.name }}</h1>
+            <div class="flex items-center gap-1 text-sm text-amber-500">
+                <span>{% if avg_rating > 0 %}{{ avg_rating|floatformat:1 }} ★{% else %}No ratings{% endif %}</span>
+                <span class="text-black/50">{% if reviews %}({{ reviews|length }}){% endif %}</span>
+            </div>
+            <div class="flex items-baseline gap-3">
+                <span class="text-2xl font-semibold">Rs {{ product.price|floatformat:0|intcomma }}</span>
+                {% if product.compare_at_price %}
+                <span class="text-lg text-black/40 line-through">Rs {{ product.compare_at_price|floatformat:0|intcomma }}</span>
+                {% endif %}
+            </div>
+            <p class="text-sm text-black/60">Sold by <span class="font-medium">{{ product.store.name }}</span></p>
+            {% if product.description %}
+            <p class="leading-relaxed text-black/80">{{ product.description }}</p>
+            {% endif %}
+
+            <div id="product-actions" class="flex flex-col gap-3" data-product-id="{{ product.id }}">
+                {% if product.variants.all %}
+                <div class="flex flex-col gap-1">
+                    <label for="variant" class="text-xs font-medium text-black/60">Variant</label>
+                    <select id="variant" class="w-fit rounded-md border border-black/15 px-3 py-1.5 text-sm">
+                        {% for variant in product.variants.all %}
+                        <option value="{{ variant.id }}">
+                            {% if variant.color or variant.size %}{{ variant.color }} {{ variant.size }}{% else %}{{ variant.sku }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                <div class="flex items-center gap-3">
+                    <label for="quantity" class="text-xs font-medium text-black/60">Qty</label>
+                    <input id="quantity" type="number" min="1" value="1" class="w-20 rounded-md border border-black/15 px-3 py-1.5 text-sm">
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="add-to-cart-btn" type="button" class="w-full rounded-md bg-brand px-6 py-3 font-semibold text-white hover:bg-brand-dark disabled:opacity-60 sm:w-auto">
+                        Add to cart
+                    </button>
+                    <button type="button"
+                            class="wishlist-btn flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-lg"
+                            data-product-id="{{ product.id }}"
+                            data-wishlisted="{% if is_wishlisted %}true{% else %}false{% endif %}"
+                            aria-label="Toggle wishlist">
+                        <span class="wishlist-icon">{% if is_wishlisted %}❤️{% else %}🤍{% endif %}</span>
+                    </button>
+                </div>
+                <p id="add-to-cart-error" class="hidden text-sm text-red-600"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <section>
+        <div role="tablist" class="flex gap-6 border-b border-black/10">
+            <button type="button" class="detail-tab-btn border-b-2 border-brand px-1 py-3 text-sm font-semibold text-brand" data-tab="description" aria-selected="true">Description</button>
+            {% if product.specifications.all %}
+            <button type="button" class="detail-tab-btn border-b-2 border-transparent px-1 py-3 text-sm font-medium text-black/50 hover:text-black/80" data-tab="specifications" aria-selected="false">Specifications</button>
+            {% endif %}
+            <button type="button" class="detail-tab-btn border-b-2 border-transparent px-1 py-3 text-sm font-medium text-black/50 hover:text-black/80" data-tab="reviews" aria-selected="false">Reviews ({{ reviews|length }})</button>
+        </div>
+
+        <div id="tab-description" class="detail-tab-panel py-6">
+            {% if product.description %}
+            <p class="leading-relaxed text-black/80">{{ product.description }}</p>
+            {% else %}
+            <p class="text-black/50">No description provided for this product.</p>
+            {% endif %}
+        </div>
+
+        {% if product.specifications.all %}
+        <div id="tab-specifications" class="detail-tab-panel hidden py-6">
+            <dl class="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
+                {% for spec in product.specifications.all %}
+                <div class="flex justify-between border-b border-black/10 py-2">
+                    <dt class="text-black/60">{{ spec.key }}</dt>
+                    <dd class="font-medium">{{ spec.value }}</dd>
+                </div>
+                {% endfor %}
+            </dl>
+        </div>
+        {% endif %}
+
+        <div id="tab-reviews" class="detail-tab-panel hidden flex-col gap-4 py-6">
+            {% if user.is_authenticated %}
+            <form id="review-form" class="flex flex-col gap-3 rounded-lg border border-black/10 p-4" data-product-id="{{ product.id }}">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium">Your rating</span>
+                    <div id="star-picker" class="flex gap-1" data-rating="5">
+                        {% for i in "12345" %}
+                        <button type="button" class="star text-xl text-amber-500" data-value="{{ i }}">★</button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input name="title" placeholder="Title (optional)" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                <textarea name="comment" rows="3" placeholder="Share your thoughts about this product (optional)" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+                <p id="review-error" class="hidden text-sm text-red-600"></p>
+                <button type="submit" class="w-fit rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+                    Submit review
+                </button>
+            </form>
+            {% else %}
+            <p class="text-sm text-black/60">
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="text-brand hover:underline">Log in</a>
+                to write a review.
+            </p>
+            {% endif %}
+
+            {% if reviews %}
+            <div class="flex flex-col gap-4">
+                {% for review in reviews %}
+                <div class="rounded-lg border border-black/10 p-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-amber-500">{{ review.rating }} ★</span>
+                        <span class="text-xs text-black/40">{{ review.customer.email }}</span>
+                    </div>
+                    {% if review.title %}<p class="mt-2 font-medium">{{ review.title }}</p>{% endif %}
+                    {% if review.comment %}<p class="mt-1 text-black/70">{{ review.comment }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-black/50">No reviews yet. Be the first to review this product.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Related products -->
+    {% if related_products %}
+    <section class="flex flex-col gap-4">
+        <h2 class="text-xl font-bold">Related Products</h2>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {% for product in related_products %}
+                {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Recently viewed -->
+    {% if recently_viewed %}
+    <section class="flex flex-col gap-4">
+        <h2 class="text-xl font-bold">Recently Viewed</h2>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {% for product in recently_viewed %}
+                {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/wishlist.js' %}"></script>
+<script src="{% static 'storefront/js/product_card.js' %}"></script>
+<script src="{% static 'storefront/js/product_detail.js' %}"></script>
+{% endblock %}

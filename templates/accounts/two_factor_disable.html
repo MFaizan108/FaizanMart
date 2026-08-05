@@ -1,11 +1,11 @@
 {% extends "accounts/base.html" %}
 {% block title %}Disable two-factor authentication{% endblock %}
-{% block content %}
-<h1>Disable two-factor authentication</h1>
-<p>Confirm your password to disable 2FA.</p>
-<form method="post">
+{% block auth_title %}Disable two-factor authentication{% endblock %}
+{% block auth_content %}
+<p class="text-sm text-black/60">Confirm your password to disable 2FA.</p>
+<form method="post" class="flex flex-col gap-4">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Disable 2FA</button>
+    <button type="submit" class="btn-primary">Disable 2FA</button>
 </form>
 {% endblock %}

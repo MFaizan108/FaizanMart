@@ -1,0 +1,21 @@
+{% url 'storefront:account_dashboard' as dashboard_url %}
+{% url 'storefront:order_list' as orders_url %}
+{% url 'storefront:wishlist' as wishlist_url %}
+{% url 'storefront:addresses' as addresses_url %}
+{% url 'storefront:wallet' as wallet_url %}
+{% url 'storefront:notifications' as notifications_url %}
+{% url 'accounts:profile' as profile_url %}
+
+<aside class="flex w-full shrink-0 flex-col gap-1 lg:w-56">
+    <a href="{{ dashboard_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == dashboard_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Dashboard</a>
+    <a href="{{ orders_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == orders_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">My Orders</a>
+    <a href="{{ wishlist_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == wishlist_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Wishlist</a>
+    <a href="{{ addresses_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == addresses_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Addresses</a>
+    <a href="{{ wallet_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == wallet_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Wallet</a>
+    <a href="{{ notifications_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == notifications_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Notifications</a>
+    <a href="{{ profile_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == profile_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Profile &amp; Security</a>
+    <form method="post" action="{% url 'accounts:logout' %}" class="mt-2 border-t border-black/8 pt-2">
+        {% csrf_token %}
+        <button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50">Logout</button>
+    </form>
+</aside>

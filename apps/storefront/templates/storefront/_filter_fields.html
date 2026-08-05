@@ -1,0 +1,85 @@
+<input type="hidden" name="q" value="{{ query }}">
+
+<div class="flex flex-col gap-2">
+    <h3 class="text-sm font-semibold">Category</h3>
+    <div class="flex flex-col gap-1.5 text-sm">
+        <label class="flex items-center gap-2">
+            <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} class="accent-brand">
+            All categories
+        </label>
+        {% for category in categories %}
+        <label class="flex items-center gap-2">
+            <input type="radio" name="category" value="{{ category.name }}" {% if category.name == selected_category %}checked{% endif %} class="accent-brand">
+            {{ category.name }}
+        </label>
+        {% for child in category.children.all %}
+        {% if child.is_active %}
+        <label class="ml-4 flex items-center gap-2 text-black/70">
+            <input type="radio" name="category" value="{{ child.name }}" {% if child.name == selected_category %}checked{% endif %} class="accent-brand">
+            {{ child.name }}
+        </label>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="flex flex-col gap-2 border-t border-black/8 pt-4">
+    <h3 class="text-sm font-semibold">Brand</h3>
+    <select name="brand" class="rounded-md border border-black/15 px-3 py-1.5 text-sm">
+        <option value="">All brands</option>
+        {% for brand in brands %}
+        <option value="{{ brand.name }}" {% if brand.name == selected_brand %}selected{% endif %}>{{ brand.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="flex flex-col gap-2 border-t border-black/8 pt-4">
+    <h3 class="text-sm font-semibold">Price Range</h3>
+    <div class="flex items-center gap-2">
+        <input name="min_price" type="number" min="0" placeholder="Min" value="{{ min_price }}"
+               class="w-full rounded-md border border-black/15 px-2 py-1.5 text-sm">
+        <span class="text-black/30">–</span>
+        <input name="max_price" type="number" min="0" placeholder="Max" value="{{ max_price }}"
+               class="w-full rounded-md border border-black/15 px-2 py-1.5 text-sm">
+    </div>
+</div>
+
+<div class="flex flex-col gap-2 border-t border-black/8 pt-4">
+    <h3 class="text-sm font-semibold">Rating</h3>
+    <div class="flex flex-col gap-1.5 text-sm">
+        <label class="flex items-center gap-2">
+            <input type="radio" name="min_rating" value="" {% if not min_rating %}checked{% endif %} class="accent-brand">
+            Any rating
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" name="min_rating" value="4" {% if min_rating == "4" %}checked{% endif %} class="accent-brand">
+            <span class="text-amber-500">★★★★</span><span class="text-black/40">&amp; up</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" name="min_rating" value="3" {% if min_rating == "3" %}checked{% endif %} class="accent-brand">
+            <span class="text-amber-500">★★★</span><span class="text-black/40">&amp; up</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" name="min_rating" value="2" {% if min_rating == "2" %}checked{% endif %} class="accent-brand">
+            <span class="text-amber-500">★★</span><span class="text-black/40">&amp; up</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" name="min_rating" value="1" {% if min_rating == "1" %}checked{% endif %} class="accent-brand">
+            <span class="text-amber-500">★</span><span class="text-black/40">&amp; up</span>
+        </label>
+    </div>
+</div>
+
+<div class="flex flex-col gap-2 border-t border-black/8 pt-4">
+    <h3 class="text-sm font-semibold">Availability</h3>
+    <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="in_stock" value="true" {% if in_stock == "true" %}checked{% endif %} class="accent-brand">
+        In stock only
+    </label>
+</div>
+
+<div class="flex gap-2 border-t border-black/8 pt-4">
+    <button type="submit" class="btn-primary flex-1 !py-2 text-sm">Apply</button>
+    <button type="button" class="filter-reset-btn btn-secondary !py-2 text-sm">Reset</button>
+</div>

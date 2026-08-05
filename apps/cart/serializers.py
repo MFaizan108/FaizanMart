@@ -6,9 +6,19 @@ from .models import CartItem
 
 
 class ProductMiniSerializer(serializers.ModelSerializer):
+    store_id = serializers.IntegerField(source="store.id", read_only=True)
+    store_name = serializers.CharField(source="store.name", read_only=True)
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ["id", "name", "slug", "price", "product_type"]
+        fields = ["id", "name", "slug", "price", "product_type", "store_id", "store_name", "image_url"]
+
+    def get_image_url(self, product):
+        image = next((img for img in product.images.all() if img.is_primary), None) or next(
+            iter(product.images.all()), None
+        )
+        return image.image.url if image else None
 
 
 class VariantMiniSerializer(serializers.ModelSerializer):

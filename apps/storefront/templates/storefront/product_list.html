@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Products — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="text-xs text-black/50">
+        <a href="{% url 'storefront:home' %}" class="hover:text-brand">Home</a>
+        <span aria-hidden="true"> / </span>
+        <span id="breadcrumb-current" class="text-black/70">{{ selected_category|default:"All Products" }}</span>
+    </nav>
+
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 id="page-title" class="text-2xl font-bold">{{ selected_category|default:"All Products" }}</h1>
+        <div class="flex items-center gap-2">
+            <button type="button" id="mobile-filter-btn" class="btn-secondary lg:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 12h10M10 18h4"/>
+                </svg>
+                Filters
+            </button>
+            <select id="sort-select" class="rounded-md border border-black/15 px-3 py-1.5 text-sm">
+                <option value="">Relevance</option>
+                <option value="popular">Most Popular</option>
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+            </select>
+        </div>
+    </div>
+
+    <p id="result-count" class="text-sm text-black/50"></p>
+    <p id="did-you-mean" class="hidden text-sm text-black/50"></p>
+
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+
+        <!-- Sidebar filters (desktop) -->
+        <form id="filter-form" class="hidden w-64 shrink-0 flex-col gap-6 lg:flex">
+            {% include "storefront/_filter_fields.html" %}
+        </form>
+
+        <!-- Grid -->
+        <div class="flex-1">
+            <div id="product-grid" class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"></div>
+            <p id="empty-message" class="hidden py-16 text-center text-black/50">No products matched your filters. Try adjusting your filters.</p>
+            <nav id="pagination" class="mt-8 flex items-center justify-center gap-4 text-sm"></nav>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile filter drawer -->
+<div id="mobile-filter-backdrop" class="fixed inset-0 z-40 hidden bg-black/40 lg:hidden"></div>
+<div id="mobile-filter-drawer" class="fixed inset-y-0 right-0 z-50 w-80 max-w-[85vw] translate-x-full transform overflow-y-auto bg-white p-4 shadow-xl transition-transform duration-200 lg:hidden">
+    <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-bold">Filters</h2>
+        <button type="button" id="mobile-filter-close" class="btn-icon" aria-label="Close filters">✕</button>
+    </div>
+    <form id="filter-form-mobile" class="flex flex-col gap-6">
+        {% include "storefront/_filter_fields.html" %}
+    </form>
+</div>
+
+<template id="product-card-template">
+    <div class="product-card card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
+        <div class="relative aspect-square overflow-hidden bg-black/5">
+            <a class="product-link absolute inset-0 block" href="#">
+                <span class="flex h-full w-full items-center justify-center text-4xl text-black/20">📦</span>
+            </a>
+            <div class="pointer-events-none absolute left-2 top-2 flex flex-col gap-1">
+                <span class="outofstock-badge badge badge-outofstock hidden">Out of stock</span>
+            </div>
+            <button type="button" class="wishlist-btn absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-lg shadow transition hover:scale-105" data-product-id="" data-wishlisted="false" aria-label="Toggle wishlist">
+                <span class="wishlist-icon">🤍</span>
+            </button>
+        </div>
+        <div class="flex flex-1 flex-col gap-1 p-3">
+            <span class="brand-name text-xs text-black/40"></span>
+            <a class="product-link line-clamp-2 text-sm font-medium hover:text-brand" href="#"></a>
+            <div class="flex items-center gap-1 text-xs text-amber-500">
+                <span aria-hidden="true">★</span>
+                <span class="rating-line text-black/50"></span>
+            </div>
+            <div class="mt-auto flex items-baseline gap-2 pt-1">
+                <span class="price font-semibold"></span>
+            </div>
+            <p class="seller-name truncate text-xs text-black/40"></p>
+            <button type="button" class="card-add-to-cart-btn btn-primary mt-2 w-full !py-2 text-xs" data-product-id="">
+                Add to Cart
+            </button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/wishlist.js' %}"></script>
+<script src="{% static 'storefront/js/product_card.js' %}"></script>
+<script src="{% static 'storefront/js/product_list.js' %}"></script>
+{% endblock %}

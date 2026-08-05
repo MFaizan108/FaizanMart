@@ -108,6 +108,8 @@ def merge_guest_cart(user, guest_token):
 
 
 def cart_totals(cart):
-    items = list(cart.items.select_related("product", "variant"))
+    items = list(
+        cart.items.select_related("product", "product__store", "variant").prefetch_related("product__images")
+    )
     subtotal = sum((item.line_total for item in items), Decimal("0.00"))
     return {"items_count": sum(item.quantity for item in items), "subtotal": subtotal}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}FaizanMart — Multi-vendor marketplace{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-8">
+
+    <!-- Hero -->
+    <section id="hero-carousel" class="relative overflow-hidden rounded-2xl" data-index="0">
+        {% if banners %}
+        <div class="hero-slides">
+            {% for banner in banners %}
+            <a href="{{ banner.link_url|default:'/products/' }}"
+               class="hero-slide {% if not forloop.first %}hidden{% endif %} block">
+                <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="h-72 w-full object-cover sm:h-96">
+            </a>
+            {% endfor %}
+        </div>
+        {% if banners|length > 1 %}
+        <button type="button" data-dir="-1" aria-label="Previous slide"
+                class="hero-nav absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow hover:bg-white">‹</button>
+        <button type="button" data-dir="1" aria-label="Next slide"
+                class="hero-nav absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow hover:bg-white">›</button>
+        <div class="hero-dots absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {% for banner in banners %}
+            <button type="button" data-slide="{{ forloop.counter0 }}" aria-label="Go to slide {{ forloop.counter }}"
+                    class="hero-dot h-2 w-2 rounded-full {% if forloop.first %}bg-white{% else %}bg-white/50{% endif %}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="flex flex-col items-start justify-center gap-4 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 px-8 py-20 text-white sm:px-14">
+            <span class="badge bg-white/15 text-white">Big Deals for Smart Shoppers</span>
+            <h1 class="max-w-xl text-3xl font-bold leading-tight sm:text-5xl">Everything you need, from every vendor you trust.</h1>
+            <p class="max-w-xl text-emerald-50">
+                FaizanMart brings independent sellers together in one storefront — browse, compare
+                and check out in a single cart.
+            </p>
+            <a href="{% url 'storefront:product_list' %}" class="btn-primary !bg-white !text-emerald-800 hover:!bg-emerald-50">Shop Now</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Categories -->
+    <section class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">Shop by category</h2>
+            <a href="{% url 'storefront:product_list' %}" class="text-sm font-medium text-brand hover:underline">View all</a>
+        </div>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {% for category in categories %}
+            <a href="{% url 'storefront:product_list' %}?category={{ category.name|urlencode }}"
+               class="card flex flex-col items-center gap-2 p-4 text-center transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md">
+                {% if category.image %}
+                <img src="{{ category.image.url }}" alt="" class="h-12 w-12 rounded-full object-cover">
+                {% else %}
+                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-lg font-semibold text-brand">{{ category.name|slice:":1" }}</span>
+                {% endif %}
+                <span class="text-xs font-medium">{{ category.name }}</span>
+            </a>
+            {% empty %}
+            <p class="col-span-full text-black/50">No categories yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Trust badges -->
+    <section class="grid grid-cols-2 gap-4 rounded-2xl border border-black/8 bg-black/[.02] p-6 sm:grid-cols-4">
+        {% include "storefront/_trust_badge.html" with icon="truck" title="Free Delivery" desc="On eligible orders" %}
+        {% include "storefront/_trust_badge.html" with icon="return" title="Easy Returns" desc="Hassle-free policy" %}
+        {% include "storefront/_trust_badge.html" with icon="shield" title="Secure Payment" desc="Encrypted checkout" %}
+        {% include "storefront/_trust_badge.html" with icon="support" title="24/7 Support" desc="We're here to help" %}
+    </section>
+
+    <!-- Flash deals -->
+    {% if flash_products %}
+    <section class="flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-bold">⚡ Flash Deals</h2>
+                <div id="flash-countdown" data-ends-at="{{ flash_sale.ends_at|date:'c' }}"
+                     class="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1 text-sm font-semibold text-red-600"></div>
+            </div>
+            <a href="{% url 'storefront:product_list' %}" class="text-sm font-medium text-brand hover:underline">View all</a>
+        </div>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {% for product in flash_products %}
+                {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Best sellers -->
+    <section class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">Best Selling Products</h2>
+            <a href="{% url 'storefront:product_list' %}" class="text-sm font-medium text-brand hover:underline">View all</a>
+        </div>
+        {% if best_sellers %}
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {% for product in best_sellers %}
+                {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-black/50">No products published yet.</p>
+        {% endif %}
+    </section>
+
+    <!-- New arrivals -->
+    <section class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">New Arrivals</h2>
+            <a href="{% url 'storefront:product_list' %}" class="text-sm font-medium text-brand hover:underline">View all</a>
+        </div>
+        {% if new_arrivals %}
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {% for product in new_arrivals %}
+                {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-black/50">No products published yet.</p>
+        {% endif %}
+    </section>
+
+    <!-- Recently viewed -->
+    {% if recently_viewed %}
+    <section class="flex flex-col gap-4">
+        <h2 class="text-xl font-bold">Recently Viewed</h2>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {% for product in recently_viewed %}
+                {% include "storefront/_product_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Promotional banner -->
+    {% if promo_banner %}
+    <a href="{{ promo_banner.link_url|default:'/products/' }}" class="block overflow-hidden rounded-2xl">
+        <img src="{{ promo_banner.image.url }}" alt="{{ promo_banner.title }}" class="w-full object-cover">
+    </a>
+    {% endif %}
+
+    <!-- Newsletter -->
+    <section class="flex flex-col items-center gap-4 rounded-2xl bg-emerald-900 px-6 py-12 text-center text-white">
+        <h2 class="text-2xl font-bold">Get the best deals in your inbox</h2>
+        <p class="max-w-md text-emerald-100">Subscribe for exclusive offers, new arrivals and flash sale alerts.</p>
+        <form class="newsletter-form flex w-full max-w-md flex-col gap-2 sm:flex-row">
+            <input type="email" name="email" required placeholder="Your email address"
+                   class="flex-1 rounded-md px-4 py-2.5 text-sm text-black/90">
+            <button type="submit" class="btn-primary !bg-white !text-emerald-800 hover:!bg-emerald-50">Subscribe</button>
+        </form>
+        <p class="newsletter-message hidden text-xs"></p>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/wishlist.js' %}"></script>
+<script src="{% static 'storefront/js/product_card.js' %}"></script>
+<script src="{% static 'storefront/js/home.js' %}"></script>
+{% endblock %}

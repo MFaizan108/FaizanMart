@@ -189,6 +189,7 @@ class ProductSearchView(APIView):
             max_price=_decimal("max_price"),
             min_rating=_decimal("min_rating"),
             in_stock_only=params.get("in_stock") == "true",
+            sort=params.get("sort"),
             page=page,
             page_size=page_size,
         )

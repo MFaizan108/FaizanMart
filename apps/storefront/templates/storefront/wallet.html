@@ -1,0 +1,47 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}My Wallet — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">My wallet</h1>
+
+    <div class="card flex items-center justify-between p-6">
+        <div>
+            <p class="text-sm text-black/50">Available balance</p>
+            <p id="wallet-balance" class="text-3xl font-bold">—</p>
+        </div>
+        <form id="add-money-form" class="flex items-center gap-2">
+            <input id="add-money-amount" type="number" min="1" step="0.01" placeholder="Amount"
+                   class="w-28 rounded-md border border-black/15 px-3 py-2 text-sm">
+            <button type="submit" class="btn-primary">Add money</button>
+        </form>
+    </div>
+    <p id="wallet-error" class="hidden text-sm text-red-600"></p>
+
+    <section class="flex flex-col gap-3">
+        <h2 class="text-lg font-semibold">Transaction history</h2>
+        <p id="transactions-loading" class="text-black/50">Loading transactions...</p>
+        <div id="transactions-empty" class="hidden card flex-col items-center gap-2 p-12 text-center">
+            <span class="text-4xl">💳</span>
+            <p class="text-black/50">No transactions yet.</p>
+        </div>
+        <div id="transactions-list" class="card flex flex-col divide-y divide-black/5"></div>
+    </section>
+</div>
+
+<template id="transaction-template">
+    <div class="flex items-center justify-between p-4 text-sm">
+        <div>
+            <p class="tx-reason font-medium capitalize"></p>
+            <p class="tx-date text-xs text-black/40"></p>
+        </div>
+        <span class="tx-amount font-semibold"></span>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/wallet.js' %}"></script>
+{% endblock %}

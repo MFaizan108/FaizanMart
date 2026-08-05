@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from . import services
 from .forms import (
@@ -26,6 +27,15 @@ from .models import UserSession
 User = get_user_model()
 
 SESSION_2FA_PENDING_USER_ID = "2fa_pending_user_id"
+SESSION_2FA_NEXT_URL = "2fa_next_url"
+
+
+def _safe_next_url(request, candidate):
+    if candidate and url_has_allowed_host_and_scheme(
+        candidate, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return candidate
+    return None
 
 
 def _verify_email_path(uidb64, token):
@@ -65,6 +75,8 @@ def verify_email_view(request, uidb64, token):
 
 
 def login_view(request):
+    next_url = _safe_next_url(request, request.POST.get("next") or request.GET.get("next"))
+
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -79,6 +91,7 @@ def login_view(request):
                 messages.error(request, "Invalid email or password.")
             elif services.has_two_factor_enabled(user):
                 request.session[SESSION_2FA_PENDING_USER_ID] = user.pk
+                request.session[SESSION_2FA_NEXT_URL] = next_url
                 return redirect("accounts:2fa-verify")
             else:
                 django_login(request, user)
@@ -90,10 +103,10 @@ def login_view(request):
                     success=True,
                     session_key=request.session.session_key,
                 )
-                return redirect(settings.LOGIN_REDIRECT_URL)
+                return redirect(next_url or settings.LOGIN_REDIRECT_URL)
     else:
         form = LoginForm()
-    return render(request, "accounts/login.html", {"form": form})
+    return render(request, "accounts/login.html", {"form": form, "next": next_url or ""})
 
 
 def two_factor_verify_view(request):
@@ -110,6 +123,7 @@ def two_factor_verify_view(request):
         if form.is_valid():
             if services.verify_totp(user, form.cleaned_data["code"]):
                 del request.session[SESSION_2FA_PENDING_USER_ID]
+                next_url = request.session.pop(SESSION_2FA_NEXT_URL, None)
                 django_login(request, user)
                 services.record_login(
                     request,
@@ -119,7 +133,7 @@ def two_factor_verify_view(request):
                     success=True,
                     session_key=request.session.session_key,
                 )
-                return redirect(settings.LOGIN_REDIRECT_URL)
+                return redirect(next_url or settings.LOGIN_REDIRECT_URL)
             services.record_login(
                 request, user=None, email_attempted=user.email, method="password", success=False
             )

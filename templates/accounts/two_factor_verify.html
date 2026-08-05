@@ -1,11 +1,11 @@
 {% extends "accounts/base.html" %}
 {% block title %}Two-factor verification{% endblock %}
-{% block content %}
-<h1>Enter your authentication code</h1>
-<p>Open your authenticator app and enter the 6-digit code.</p>
-<form method="post">
+{% block auth_title %}Enter your authentication code{% endblock %}
+{% block auth_content %}
+<p class="text-sm text-black/60">Open your authenticator app and enter the 6-digit code.</p>
+<form method="post" class="flex flex-col gap-4">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Verify</button>
+    <button type="submit" class="btn-primary">Verify</button>
 </form>
 {% endblock %}

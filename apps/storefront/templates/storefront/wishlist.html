@@ -1,0 +1,38 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}My Wishlist — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">My wishlist</h1>
+    <p id="wishlist-loading" class="text-black/50">Loading wishlist...</p>
+
+    <div id="wishlist-empty" class="hidden flex-col items-center gap-3 py-16 text-center">
+        <span class="text-5xl">🤍</span>
+        <p class="text-black/50">Your wishlist is empty.</p>
+        <a href="{% url 'storefront:product_list' %}" class="btn-primary mt-2">Browse products</a>
+    </div>
+
+    <div id="wishlist-items" class="card flex flex-col divide-y divide-black/10"></div>
+</div>
+
+<template id="wishlist-item-template">
+    <div class="flex items-center justify-between gap-4 px-4 py-4">
+        <div>
+            <a class="item-name font-medium hover:text-brand" href="#"></a>
+            <p class="item-price text-sm text-black/50"></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button type="button" class="move-to-cart-btn rounded-md bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+                Move to cart
+            </button>
+            <button type="button" class="remove-btn text-sm text-red-600 hover:underline">Remove</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/wishlist_page.js' %}"></script>
+{% endblock %}

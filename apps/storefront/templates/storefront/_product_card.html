@@ -1,0 +1,60 @@
+{% load humanize %}
+<div class="product-card card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
+    <div class="relative aspect-square overflow-hidden bg-black/5">
+        <a href="{% url 'storefront:product_detail' product.id %}" class="absolute inset-0 block">
+            {% with product.images.all|first as image %}
+            {% if image %}
+                <img src="{{ image.image.url }}" alt="{{ product.name }}" loading="lazy"
+                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+            {% else %}
+                <span class="flex h-full w-full items-center justify-center text-4xl text-black/20">📦</span>
+            {% endif %}
+            {% endwith %}
+        </a>
+        <div class="pointer-events-none absolute left-2 top-2 flex flex-col gap-1">
+            {% if product.card_discount_pct %}
+            <span class="badge badge-sale">-{{ product.card_discount_pct }}%</span>
+            {% endif %}
+            {% if not product.card_in_stock %}
+            <span class="badge badge-outofstock">Out of stock</span>
+            {% endif %}
+        </div>
+        <button type="button"
+                class="wishlist-btn absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-lg shadow transition hover:scale-105"
+                data-product-id="{{ product.id }}"
+                data-wishlisted="{% if product.id in wishlisted_ids %}true{% else %}false{% endif %}"
+                aria-label="Toggle wishlist">
+            <span class="wishlist-icon">{% if product.id in wishlisted_ids %}❤️{% else %}🤍{% endif %}</span>
+        </button>
+    </div>
+    <div class="flex flex-1 flex-col gap-1 p-3">
+        {% if product.brand %}
+        <span class="text-xs text-black/40">{{ product.brand.name }}</span>
+        {% endif %}
+        <a href="{% url 'storefront:product_detail' product.id %}" class="line-clamp-2 text-sm font-medium hover:text-brand">{{ product.name }}</a>
+        <div class="flex items-center gap-1 text-xs text-amber-500">
+            <span aria-hidden="true">★</span>
+            <span class="text-black/50">{% if product.card_review_count %}{{ product.card_avg_rating }} ({{ product.card_review_count }}){% else %}No ratings{% endif %}</span>
+        </div>
+        <div class="mt-auto flex items-baseline gap-2 pt-1">
+            {% if product.flash_sale_price %}
+            <span class="font-semibold text-red-600">Rs {{ product.flash_sale_price|floatformat:0|intcomma }}</span>
+            <span class="text-xs text-black/40 line-through">Rs {{ product.price|floatformat:0|intcomma }}</span>
+            {% else %}
+            <span class="font-semibold">Rs {{ product.price|floatformat:0|intcomma }}</span>
+            {% if product.compare_at_price and product.card_discount_pct %}
+            <span class="text-xs text-black/40 line-through">Rs {{ product.compare_at_price|floatformat:0|intcomma }}</span>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% if product.store %}
+        <p class="truncate text-xs text-black/40">Sold by {{ product.store.name }}</p>
+        {% endif %}
+        <button type="button"
+                class="card-add-to-cart-btn btn-primary mt-2 w-full !py-2 text-xs"
+                data-product-id="{{ product.id }}"
+                {% if not product.card_in_stock %}disabled{% endif %}>
+            {% if product.card_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
+        </button>
+    </div>
+</div>

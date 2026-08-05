@@ -1,0 +1,32 @@
+<svg width="680" height="200" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="portalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338CA"/>
+      <stop offset="55%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="680" height="200" fill="#FFFFFF"/>
+
+  <!-- icon group, scaled from the 240x240 icon into a 160x160 slot -->
+  <g transform="translate(20,20) scale(0.6667)">
+    <circle cx="120" cy="120" r="100" fill="none" stroke="url(#portalGrad)" stroke-width="4" opacity="0.55"/>
+    <circle cx="190.71" cy="49.29" r="7" fill="#06B6D4"/>
+    <path
+      fill-rule="evenodd"
+      fill="url(#portalGrad)"
+      d="M120,30 A90,90 0 0 1 120,210 A90,90 0 0 1 120,30 Z
+         M100,68 L156,68 L156,86 L118,86 L118,108 L146,108 L146,126 L118,126 L118,168 L100,168 Z"
+    />
+  </g>
+
+  <!-- wordmark -->
+  <text x="220" y="120" font-family="Poppins, Montserrat, 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="56" letter-spacing="0.5">
+    <tspan fill="#1B1B2F">Faizan</tspan><tspan fill="url(#portalGrad)">Mart</tspan>
+  </text>
+
+  <!-- subtle tagline rule -->
+  <rect x="222" y="146" width="230" height="3" rx="1.5" fill="url(#portalGrad)" opacity="0.35"/>
+</svg>

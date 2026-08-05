@@ -1,29 +1,60 @@
-{% extends "accounts/base.html" %}
-{% block title %}My profile{% endblock %}
-{% block content %}
-<h1>Welcome, {{ user_obj.get_short_name }}</h1>
-<p>Email: {{ user_obj.email }} {% if user_obj.is_email_verified %}(verified){% else %}(not verified){% endif %}</p>
-<p>Role: {{ user_obj.get_role_display }}</p>
+{% extends "storefront/_account_base.html" %}
+{% block title %}My profile — FaizanMart{% endblock %}
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">Welcome, {{ user_obj.get_short_name }}</h1>
 
-<h2>Two-factor authentication</h2>
-{% if two_factor_enabled %}
-<p>Enabled. <a href="{% url 'accounts:2fa-disable' %}">Disable</a></p>
-{% else %}
-<p>Disabled. <a href="{% url 'accounts:2fa-setup' %}">Enable</a></p>
-{% endif %}
+    <dl class="card flex flex-col gap-3 p-6">
+        <div class="flex justify-between">
+            <dt class="text-black/60">Email</dt>
+            <dd class="font-medium">
+                {{ user_obj.email }}
+                {% if user_obj.is_email_verified %}
+                <span class="text-emerald-600">(verified)</span>
+                {% else %}
+                <span class="text-black/40">(not verified)</span>
+                {% endif %}
+            </dd>
+        </div>
+        <div class="flex justify-between">
+            <dt class="text-black/60">Role</dt>
+            <dd class="font-medium">{{ user_obj.get_role_display }}</dd>
+        </div>
+    </dl>
 
-<h2>Active sessions</h2>
-<table>
-    <tr><th>IP</th><th>Device</th><th>Last seen</th><th></th></tr>
-    {% for session in sessions %}
-    <tr>
-        <td>{{ session.ip_address|default:"—" }}</td>
-        <td>{{ session.user_agent|truncatechars:30 }}</td>
-        <td>{{ session.last_seen_at }}</td>
-        <td><a href="{% url 'accounts:session-revoke' session.pk %}">Revoke</a></td>
-    </tr>
-    {% endfor %}
-</table>
+    <section class="flex flex-col gap-2">
+        <h2 class="text-lg font-semibold">Two-factor authentication</h2>
+        {% if two_factor_enabled %}
+        <p class="text-sm text-black/60">Enabled. <a href="{% url 'accounts:2fa-disable' %}" class="text-brand hover:underline">Disable</a></p>
+        {% else %}
+        <p class="text-sm text-black/60">Disabled. <a href="{% url 'accounts:2fa-setup' %}" class="text-brand hover:underline">Enable</a></p>
+        {% endif %}
+    </section>
 
-<p><a href="{% url 'accounts:logout' %}">Log out</a></p>
+    <section class="flex flex-col gap-2">
+        <h2 class="text-lg font-semibold">Active sessions</h2>
+        <div class="overflow-x-auto rounded-xl border border-black/10">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-black/10 text-left text-xs uppercase text-black/40">
+                        <th class="p-3">IP</th>
+                        <th class="p-3">Device</th>
+                        <th class="p-3">Last seen</th>
+                        <th class="p-3"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr class="border-b border-black/5 last:border-0">
+                        <td class="p-3">{{ session.ip_address|default:"—" }}</td>
+                        <td class="p-3">{{ session.user_agent|truncatechars:30 }}</td>
+                        <td class="p-3">{{ session.last_seen_at }}</td>
+                        <td class="p-3"><a href="{% url 'accounts:session-revoke' session.pk %}" class="text-red-600 hover:underline">Revoke</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 {% endblock %}

@@ -1,0 +1,23 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="portalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4338CA"/>
+      <stop offset="55%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- outer portal ring -->
+  <circle cx="120" cy="120" r="100" fill="none" stroke="url(#portalGrad)" stroke-width="4" opacity="0.55"/>
+
+  <!-- orbiting accent (a product entering the portal) -->
+  <circle cx="190.71" cy="49.29" r="7" fill="#06B6D4"/>
+
+  <!-- main portal disc with hidden "F" carved out via negative space -->
+  <path
+    fill-rule="evenodd"
+    fill="url(#portalGrad)"
+    d="M120,30 A90,90 0 0 1 120,210 A90,90 0 0 1 120,30 Z
+       M100,68 L156,68 L156,86 L118,86 L118,108 L146,108 L146,126 L118,126 L118,168 L100,168 Z"
+  />
+</svg>
