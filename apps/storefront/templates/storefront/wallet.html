@@ -22,8 +22,18 @@
 
     <section class="flex flex-col gap-3">
         <h2 class="text-lg font-semibold">Transaction history</h2>
-        <p id="transactions-loading" class="text-black/50">Loading transactions...</p>
-        <div id="transactions-empty" class="hidden card flex-col items-center gap-2 p-12 text-center">
+        <div id="transactions-loading" class="card flex flex-col divide-y divide-black/5">
+            {% for _ in "123" %}
+            <div class="flex items-center justify-between p-4">
+                <div class="flex flex-col gap-2">
+                    <div class="skeleton h-4 w-28"></div>
+                    <div class="skeleton h-3 w-20"></div>
+                </div>
+                <div class="skeleton h-4 w-16"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="transactions-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
             <span class="text-4xl">💳</span>
             <p class="text-black/50">No transactions yet.</p>
         </div>

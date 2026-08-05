@@ -4,7 +4,7 @@
     const container = document.getElementById(containerId);
     if (!container) return;
     const button = container.querySelector("button");
-    const panel = container.querySelector(".category-panel, .account-panel");
+    const panel = container.querySelector(".category-panel, .account-panel, .notification-panel");
     if (!button || !panel) return;
 
     function open() {
@@ -34,6 +34,61 @@
 
   setupDropdown("category-menu");
   setupDropdown("account-menu");
+  setupDropdown("notification-menu");
+
+  /* ---- Notifications dropdown ---- */
+  const notificationBadge = document.getElementById("notification-badge-count");
+  const notificationList = document.getElementById("notification-dropdown-list");
+
+  function timeAgo(isoDate) {
+    const seconds = Math.floor((Date.now() - new Date(isoDate).getTime()) / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  }
+
+  async function loadNotificationDropdown() {
+    if (!notificationBadge || !notificationList) return;
+    try {
+      const [countData, listData] = await Promise.all([
+        Storefront.apiFetch("/notifications/unread_count/"),
+        Storefront.apiFetch("/notifications/?page_size=6"),
+      ]);
+
+      if (countData.count > 0) {
+        notificationBadge.textContent = countData.count > 9 ? "9+" : countData.count;
+        notificationBadge.classList.remove("hidden");
+        notificationBadge.classList.add("flex");
+      }
+
+      notificationList.innerHTML = "";
+      const items = listData.results || [];
+      if (items.length === 0) {
+        notificationList.innerHTML = '<p class="p-4 text-sm text-black/40">No notifications yet.</p>';
+        return;
+      }
+      items.forEach((n) => {
+        const row = document.createElement(n.link ? "a" : "div");
+        if (n.link) row.href = n.link;
+        row.className = "flex items-start gap-2 px-4 py-3 text-sm hover:bg-brand/5" + (n.is_read ? "" : " bg-brand/[.03]");
+        row.innerHTML = `
+          ${n.is_read ? "" : '<span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand"></span>'}
+          <span class="flex-1">
+            <span class="block font-medium">${n.title}</span>
+            <span class="block text-black/50">${n.message}</span>
+            <span class="block text-xs text-black/30">${timeAgo(n.created_at)}</span>
+          </span>`;
+        notificationList.appendChild(row);
+      });
+    } catch (err) {
+      notificationList.innerHTML = '<p class="p-4 text-sm text-black/40">Could not load notifications.</p>';
+    }
+  }
+
+  if (window.IS_AUTHENTICATED) loadNotificationDropdown();
 
   /* ---- Mobile drawer ---- */
   const drawer = document.getElementById("mobile-drawer");

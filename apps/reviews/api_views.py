@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import services
-from .models import Review, WishlistItem
+from .models import ProductQuestion, Review, WishlistItem
 from .permissions import IsReviewOwnerOrReadOnly
 from .serializers import (
+    AnswerQuestionSerializer,
+    ProductQuestionSerializer,
     ReviewSerializer,
     ToggleWishlistSerializer,
     VendorReplySerializer,
@@ -25,6 +27,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         product_id = self.request.query_params.get("product")
         if product_id:
             queryset = queryset.filter(product_id=product_id)
+        if self.request.query_params.get("mine") == "true" and self.request.user.is_authenticated:
+            queryset = queryset.filter(customer=self.request.user).order_by("-created_at")
         return queryset
 
     def perform_create(self, serializer):
@@ -53,6 +57,33 @@ class ReviewViewSet(viewsets.ModelViewSet):
         except ValueError as exc:
             raise PermissionDenied(str(exc))
         return Response(ReviewSerializer(review).data)
+
+
+class ProductQuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductQuestionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    http_method_names = ["get", "post", "head", "options"]
+
+    def get_queryset(self):
+        queryset = ProductQuestion.objects.select_related("customer", "answered_by", "product__store")
+        product_id = self.request.query_params.get("product")
+        if product_id:
+            queryset = queryset.filter(product_id=product_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)
+
+    @action(detail=True, methods=["post"])
+    def answer(self, request, pk=None):
+        question = get_object_or_404(ProductQuestion, pk=pk)
+        serializer = AnswerQuestionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            services.answer_question(question, request.user, serializer.validated_data["answer"])
+        except ValueError as exc:
+            raise PermissionDenied(str(exc))
+        return Response(ProductQuestionSerializer(question).data)
 
 
 class WishlistListView(generics.ListAPIView):

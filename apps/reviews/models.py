@@ -31,6 +31,26 @@ class ReviewImage(models.Model):
         return f"Image for review {self.review_id}"
 
 
+class ProductQuestion(TimeStampedModel):
+    product = models.ForeignKey("catalog.Product", on_delete=models.CASCADE, related_name="questions")
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="product_questions"
+    )
+    question = models.TextField()
+    answer = models.TextField(blank=True)
+    answered_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="answered_questions",
+    )
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Q on {self.product.name} by {self.customer.email}"
+
+
 class WishlistItem(models.Model):
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="wishlist_items"

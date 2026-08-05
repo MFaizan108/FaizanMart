@@ -8,6 +8,7 @@ from apps.core.permissions import IsSuperAdmin, IsVendor
 from . import services
 from .models import Store
 from .serializers import (
+    PublicStoreSerializer,
     StoreAdminListSerializer,
     StoreRejectSerializer,
     StoreSerializer,
@@ -24,6 +25,13 @@ class VendorRegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         store = serializer.save()
         return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
+
+
+class PublicStoreDetailView(generics.RetrieveAPIView):
+    serializer_class = PublicStoreSerializer
+    permission_classes = [permissions.AllowAny]
+    lookup_field = "slug"
+    queryset = Store.objects.filter(status=Store.Status.APPROVED)
 
 
 class MyStoreView(generics.RetrieveUpdateAPIView):

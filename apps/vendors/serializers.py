@@ -70,6 +70,26 @@ class StoreSerializer(serializers.ModelSerializer):
         ]
 
 
+class PublicStoreSerializer(serializers.ModelSerializer):
+    """Safe-to-expose subset of Store for the public seller storefront page —
+    excludes owner contact info, bank/tax details, and internal review fields."""
+
+    class Meta:
+        model = Store
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "logo",
+            "banner",
+            "return_policy",
+            "shipping_policy",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
 class StoreAdminListSerializer(serializers.ModelSerializer):
     owner_email = serializers.EmailField(source="owner.email", read_only=True)
 

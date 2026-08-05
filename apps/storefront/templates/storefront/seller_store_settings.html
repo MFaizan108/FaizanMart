@@ -1,0 +1,47 @@
+{% extends "storefront/_seller_base.html" %}
+{% load static %}
+
+{% block title %}Store Settings — FaizanMart{% endblock %}
+
+{% block seller_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">Store settings</h1>
+    <p id="store-loading" class="text-black/50">Loading…</p>
+
+    <form id="store-form" class="hidden fade-in flex-col gap-4">
+        <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-black/60">Store name</label>
+            <input name="name" required class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-black/60">Description</label>
+            <textarea name="description" rows="3" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-black/60">Logo</label>
+                <input name="logo" type="file" accept="image/*" class="text-sm">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-black/60">Banner</label>
+                <input name="banner" type="file" accept="image/*" class="text-sm">
+            </div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-black/60">Shipping policy</label>
+            <textarea name="shipping_policy" rows="2" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-black/60">Return policy</label>
+            <textarea name="return_policy" rows="2" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+        </div>
+        <p id="store-form-error" class="hidden text-sm text-red-600"></p>
+        <p id="store-form-success" class="hidden text-sm text-brand"></p>
+        <button type="submit" class="btn-primary w-fit">Save changes</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/seller_store_settings.js' %}"></script>
+{% endblock %}

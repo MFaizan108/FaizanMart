@@ -1,0 +1,45 @@
+{% extends "storefront/_seller_base.html" %}
+{% load static %}
+
+{% block title %}Orders — FaizanMart{% endblock %}
+
+{% block seller_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">Orders</h1>
+    <p id="orders-error" class="hidden text-sm text-red-600"></p>
+
+    <div id="orders-loading" class="flex flex-col gap-3">
+        {% for _ in "123" %}
+        <div class="card flex items-center justify-between gap-4 p-4">
+            <div class="flex flex-col gap-2"><div class="skeleton h-4 w-32"></div><div class="skeleton h-3 w-24"></div></div>
+            <div class="skeleton h-8 w-32"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="orders-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">🧾</span>
+        <p class="text-black/50">No orders yet.</p>
+    </div>
+
+    <div id="orders-list" class="flex flex-col gap-3"></div>
+</div>
+
+<template id="seller-order-row-template">
+    <div class="card flex flex-wrap items-center justify-between gap-4 p-4">
+        <div class="flex flex-col gap-1">
+            <a class="order-link font-medium hover:text-brand" href="#"></a>
+            <span class="order-meta text-xs text-black/40"></span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="status-badge badge capitalize"></span>
+            <select class="next-status-select rounded-md border border-black/15 px-2 py-1.5 text-xs"></select>
+            <button type="button" class="apply-status-btn btn-secondary !py-1.5 text-xs">Update</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/seller_orders.js' %}"></script>
+{% endblock %}

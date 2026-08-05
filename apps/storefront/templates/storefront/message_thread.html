@@ -1,0 +1,39 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}Messages — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex h-[70vh] flex-col gap-3" data-conversation-id="{{ conversation_id }}">
+    <div class="flex items-center gap-3">
+        <a href="{% url 'storefront:messages_list' %}" class="btn-icon" aria-label="Back to messages">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1 id="thread-title" class="text-lg font-bold">Conversation</h1>
+    </div>
+
+    <p id="thread-error" class="hidden text-sm text-red-600"></p>
+    <p id="thread-loading" class="text-sm text-black/40">Loading messages…</p>
+
+    <div id="thread-messages" class="flex flex-1 flex-col gap-3 overflow-y-auto rounded-xl border border-black/10 bg-black/[.01] p-4"></div>
+
+    <form id="thread-send-form" class="flex items-center gap-2">
+        <input id="thread-input" type="text" required placeholder="Type a message…"
+               class="flex-1 rounded-full border border-black/15 px-4 py-2.5 text-sm">
+        <button type="submit" class="btn-primary !rounded-full !px-5">Send</button>
+    </form>
+</div>
+
+<template id="message-bubble-template">
+    <div class="message-row flex flex-col gap-1">
+        <div class="message-bubble max-w-[75%] rounded-2xl px-4 py-2 text-sm"></div>
+        <span class="message-time text-xs text-black/30"></span>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/message_thread.js' %}"></script>
+{% endblock %}

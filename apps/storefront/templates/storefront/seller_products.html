@@ -1,0 +1,80 @@
+{% extends "storefront/_seller_base.html" %}
+{% load static %}
+
+{% block title %}My Products — FaizanMart{% endblock %}
+
+{% block seller_content %}
+<div class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">My products</h1>
+        <button id="toggle-product-form" type="button" class="btn-primary">+ Add product</button>
+    </div>
+
+    <form id="product-form" class="hidden card flex-col gap-3 p-4">
+        <div class="grid grid-cols-2 gap-3">
+            <select name="category" required class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                <option value="">Category…</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="brand" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                <option value="">Brand (optional)…</option>
+                {% for brand in brands %}
+                <option value="{{ brand.id }}">{{ brand.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input name="name" required placeholder="Product name" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        <div class="grid grid-cols-3 gap-3">
+            <input name="sku" required placeholder="SKU" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <input name="price" type="number" min="0" step="0.01" required placeholder="Price" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <input name="compare_at_price" type="number" min="0" step="0.01" placeholder="Compare-at price" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+        </div>
+        <textarea name="description" rows="2" placeholder="Description" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+        <select name="status" class="w-fit rounded-md border border-black/15 px-3 py-2 text-sm">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+        </select>
+        <p id="product-form-error" class="hidden text-sm text-red-600"></p>
+        <button type="submit" class="btn-primary w-fit">Save product</button>
+    </form>
+
+    <p id="products-error" class="hidden text-sm text-red-600"></p>
+
+    <div id="products-loading" class="flex flex-col gap-3">
+        {% for _ in "123" %}
+        <div class="card flex items-center justify-between gap-4 p-4">
+            <div class="flex flex-col gap-2"><div class="skeleton h-4 w-40"></div><div class="skeleton h-3 w-20"></div></div>
+            <div class="skeleton h-8 w-24"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="products-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">📦</span>
+        <p class="text-black/50">You haven't added any products yet.</p>
+    </div>
+
+    <div id="products-list" class="flex flex-col gap-3"></div>
+</div>
+
+<template id="product-row-template">
+    <div class="card flex flex-wrap items-center justify-between gap-4 p-4">
+        <div class="flex flex-col gap-1">
+            <a class="product-link font-medium hover:text-brand" href="#" target="_blank"></a>
+            <span class="product-meta text-xs text-black/40"></span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="status-badge badge capitalize"></span>
+            <button type="button" class="toggle-status-btn btn-secondary !py-1.5 text-xs"></button>
+            <button type="button" class="delete-btn text-sm text-red-600 hover:underline">Delete</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>window.STORE_ID = {{ store.id }};</script>
+<script src="{% static 'storefront/js/seller_products.js' %}"></script>
+{% endblock %}

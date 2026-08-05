@@ -87,8 +87,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         )
         user = self.request.user
         if user.is_authenticated and hasattr(user, "store"):
-            return queryset.filter(Q(status=Product.Status.PUBLISHED) | Q(store=user.store))
-        return queryset.filter(status=Product.Status.PUBLISHED)
+            queryset = queryset.filter(Q(status=Product.Status.PUBLISHED) | Q(store=user.store))
+        else:
+            queryset = queryset.filter(status=Product.Status.PUBLISHED)
+        store_id = self.request.query_params.get("store")
+        if store_id:
+            queryset = queryset.filter(store_id=store_id)
+        return queryset
 
     def _require_approved_store(self, user):
         store = getattr(user, "store", None)
@@ -185,6 +190,7 @@ class ProductSearchView(APIView):
             query=params.get("q", ""),
             category=params.get("category"),
             brand=params.get("brand"),
+            store=params.get("store"),
             min_price=_decimal("min_price"),
             max_price=_decimal("max_price"),
             min_rating=_decimal("min_rating"),

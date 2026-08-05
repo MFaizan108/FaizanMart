@@ -1,0 +1,66 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}Returns &amp; Refunds — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Returns &amp; Refunds</h1>
+        <button id="toggle-return-form" type="button" class="btn-primary">+ Request a return</button>
+    </div>
+
+    <form id="return-form" class="hidden card flex-col gap-3 p-4">
+        <div class="flex flex-col gap-1">
+            <label for="return-order" class="text-xs font-medium text-black/60">Order</label>
+            <select id="return-order" required class="rounded-md border border-black/15 px-3 py-2 text-sm">
+                <option value="">Select a delivered order…</option>
+            </select>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label for="return-reason" class="text-xs font-medium text-black/60">Reason for return</label>
+            <textarea id="return-reason" required rows="3" placeholder="Tell us what went wrong"
+                      class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+        </div>
+        <p id="return-form-error" class="hidden text-sm text-red-600"></p>
+        <button type="submit" class="btn-primary w-fit">Submit request</button>
+    </form>
+
+    <p id="returns-error" class="hidden text-sm text-red-600"></p>
+
+    <div id="returns-loading" class="flex flex-col gap-4">
+        {% for _ in "12" %}
+        <div class="card flex flex-col gap-2 p-4">
+            <div class="skeleton h-4 w-40"></div>
+            <div class="skeleton h-3 w-full"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="returns-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">↩️</span>
+        <p class="text-black/50">You haven't requested any returns yet.</p>
+    </div>
+
+    <div id="returns-list" class="flex flex-col gap-4"></div>
+</div>
+
+<template id="return-card-template">
+    <div class="card flex flex-col gap-2 p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="order-number font-medium"></p>
+                <p class="store-name text-xs text-black/40"></p>
+            </div>
+            <span class="status-badge badge capitalize"></span>
+        </div>
+        <p class="reason-text text-sm text-black/70"></p>
+        <p class="staff-note hidden rounded-md bg-black/[.03] p-2 text-xs text-black/60"></p>
+        <p class="request-date text-xs text-black/40"></p>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/returns.js' %}"></script>
+{% endblock %}

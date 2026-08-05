@@ -31,6 +31,88 @@
     });
   });
 
+  /* ---- Product Q&A ---- */
+  const qaPanel = document.getElementById("tab-qa");
+  if (qaPanel) {
+    const productId = qaPanel.dataset.productId;
+    const isOwner = qaPanel.dataset.isOwner === "true";
+    const qaLoading = document.getElementById("qa-loading");
+    const qaList = document.getElementById("qa-list");
+    const qaEmpty = document.getElementById("qa-empty");
+    const qaTemplate = document.getElementById("qa-row-template");
+    const questionForm = document.getElementById("question-form");
+    const questionText = document.getElementById("question-text");
+    const questionError = document.getElementById("question-error");
+
+    function renderQuestion(q) {
+      const node = qaTemplate.content.cloneNode(true);
+      node.querySelector(".q-text").textContent = q.question;
+      node.querySelector(".q-meta").textContent =
+        `Asked by ${q.customer_email} on ${new Date(q.created_at).toLocaleDateString()}`;
+
+      if (q.answer) {
+        const aEl = node.querySelector(".a-text");
+        aEl.querySelector(".a-text-value").textContent = q.answer;
+        aEl.classList.remove("hidden");
+      } else if (isOwner) {
+        const form = node.querySelector(".owner-answer-form");
+        form.classList.remove("hidden");
+        form.classList.add("flex");
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const textarea = form.querySelector("textarea");
+          try {
+            await Storefront.apiFetch(`/reviews/questions/${q.id}/answer/`, {
+              method: "POST",
+              body: JSON.stringify({ answer: textarea.value }),
+            });
+            loadQuestions();
+          } catch (err) {
+            alert(err.message);
+          }
+        });
+      }
+      return node;
+    }
+
+    async function loadQuestions() {
+      qaLoading.classList.remove("hidden");
+      qaList.innerHTML = "";
+      qaEmpty.classList.add("hidden");
+      try {
+        const data = await Storefront.apiFetch(`/reviews/questions/?product=${productId}`);
+        qaLoading.classList.add("hidden");
+        const results = data.results || data;
+        if (!results.length) {
+          qaEmpty.classList.remove("hidden");
+          return;
+        }
+        results.forEach((q) => qaList.appendChild(renderQuestion(q)));
+      } catch (err) {
+        qaLoading.textContent = "Could not load questions.";
+      }
+    }
+
+    if (questionForm) {
+      questionForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        Storefront.hideError(questionError);
+        try {
+          await Storefront.apiFetch("/reviews/questions/", {
+            method: "POST",
+            body: JSON.stringify({ product: Number(productId), question: questionText.value }),
+          });
+          questionForm.reset();
+          loadQuestions();
+        } catch (err) {
+          Storefront.showError(questionError, err.message);
+        }
+      });
+    }
+
+    loadQuestions();
+  }
+
   const actions = document.getElementById("product-actions");
   if (actions) {
     const productId = Number(actions.dataset.productId);
@@ -42,8 +124,8 @@
     addBtn.addEventListener("click", async () => {
       Storefront.hideError(errorEl);
       addBtn.disabled = true;
-      const originalText = addBtn.textContent;
-      addBtn.textContent = "Adding...";
+      const originalHtml = addBtn.innerHTML;
+      addBtn.innerHTML = '<span class="spinner"></span> Adding...';
       try {
         await Storefront.apiFetch("/cart/items/", {
           method: "POST",
@@ -54,10 +136,10 @@
           }),
         });
         addBtn.textContent = "Added ✓";
-        setTimeout(() => (addBtn.textContent = originalText), 2000);
+        setTimeout(() => (addBtn.innerHTML = originalHtml), 2000);
       } catch (err) {
         Storefront.showError(errorEl, err.message);
-        addBtn.textContent = originalText;
+        addBtn.innerHTML = originalHtml;
       } finally {
         addBtn.disabled = false;
       }

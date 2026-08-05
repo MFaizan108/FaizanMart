@@ -1,6 +1,7 @@
 (function () {
   const PAGE_SIZE = 12;
   const grid = document.getElementById("product-grid");
+  const gridSkeleton = document.getElementById("product-grid-skeleton");
   const template = document.getElementById("product-card-template");
   const forms = [document.getElementById("filter-form"), document.getElementById("filter-form-mobile")].filter(Boolean);
   const sortSelect = document.getElementById("sort-select");
@@ -151,6 +152,10 @@
   async function fetchAndRender(filters) {
     resultCount.textContent = "Loading...";
     grid.innerHTML = "";
+    grid.classList.add("hidden");
+    grid.classList.remove("grid");
+    gridSkeleton.classList.remove("hidden");
+    gridSkeleton.classList.add("grid");
     emptyMessage.classList.add("hidden");
     didYouMean.classList.add("hidden");
     syncFormInputs(filters);
@@ -159,6 +164,11 @@
 
     const query = buildQuery(filters);
     const data = await Storefront.apiFetch("/catalog/products/search/?" + query);
+
+    gridSkeleton.classList.add("hidden");
+    gridSkeleton.classList.remove("grid");
+    grid.classList.remove("hidden");
+    grid.classList.add("grid");
 
     resultCount.textContent = `${data.count} products found`;
     if (data.did_you_mean) {

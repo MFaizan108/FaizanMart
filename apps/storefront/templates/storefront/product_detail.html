@@ -55,7 +55,7 @@
                 <span class="text-lg text-black/40 line-through">Rs {{ product.compare_at_price|floatformat:0|intcomma }}</span>
                 {% endif %}
             </div>
-            <p class="text-sm text-black/60">Sold by <span class="font-medium">{{ product.store.name }}</span></p>
+            <p class="text-sm text-black/60">Sold by <a href="{% url 'storefront:seller_storefront' product.store.slug %}" class="font-medium text-brand hover:underline">{{ product.store.name }}</a></p>
             {% if product.description %}
             <p class="leading-relaxed text-black/80">{{ product.description }}</p>
             {% endif %}
@@ -102,6 +102,7 @@
             <button type="button" class="detail-tab-btn border-b-2 border-transparent px-1 py-3 text-sm font-medium text-black/50 hover:text-black/80" data-tab="specifications" aria-selected="false">Specifications</button>
             {% endif %}
             <button type="button" class="detail-tab-btn border-b-2 border-transparent px-1 py-3 text-sm font-medium text-black/50 hover:text-black/80" data-tab="reviews" aria-selected="false">Reviews ({{ reviews|length }})</button>
+            <button type="button" class="detail-tab-btn border-b-2 border-transparent px-1 py-3 text-sm font-medium text-black/50 hover:text-black/80" data-tab="qa" aria-selected="false">Q&amp;A</button>
         </div>
 
         <div id="tab-description" class="detail-tab-panel py-6">
@@ -167,6 +168,28 @@
             <p class="text-black/50">No reviews yet. Be the first to review this product.</p>
             {% endif %}
         </div>
+
+        <div id="tab-qa" class="detail-tab-panel hidden flex-col gap-4 py-6" data-product-id="{{ product.id }}" data-is-owner="{% if user.store.id == product.store_id %}true{% else %}false{% endif %}">
+            {% if user.is_authenticated %}
+            <form id="question-form" class="flex flex-col gap-2 rounded-lg border border-black/10 p-4">
+                <label for="question-text" class="text-sm font-medium">Ask a question about this product</label>
+                <textarea id="question-text" rows="2" required placeholder="e.g. Does this come with a warranty?" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+                <p id="question-error" class="hidden text-sm text-red-600"></p>
+                <button type="submit" class="w-fit rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+                    Submit question
+                </button>
+            </form>
+            {% else %}
+            <p class="text-sm text-black/60">
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="text-brand hover:underline">Log in</a>
+                to ask a question.
+            </p>
+            {% endif %}
+
+            <p id="qa-loading" class="text-sm text-black/40">Loading questions…</p>
+            <div id="qa-list" class="flex flex-col gap-4"></div>
+            <p id="qa-empty" class="hidden text-black/50">No questions yet. Be the first to ask.</p>
+        </div>
     </section>
 
     <!-- Related products -->
@@ -193,6 +216,18 @@
     </section>
     {% endif %}
 </div>
+
+<template id="qa-row-template">
+    <div class="rounded-lg border border-black/10 p-4">
+        <p class="text-sm"><span class="font-semibold text-black/40">Q:</span> <span class="q-text font-medium"></span></p>
+        <p class="q-meta mt-1 text-xs text-black/40"></p>
+        <p class="a-text mt-2 hidden text-sm text-black/70"><span class="font-semibold text-brand">A:</span> <span class="a-text-value"></span></p>
+        <form class="owner-answer-form hidden mt-2 flex-col gap-2">
+            <textarea rows="2" required placeholder="Write an answer as the seller" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+            <button type="submit" class="w-fit rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark">Post answer</button>
+        </form>
+    </div>
+</template>
 {% endblock %}
 
 {% block extra_js %}

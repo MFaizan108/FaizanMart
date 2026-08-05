@@ -1,0 +1,54 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}Payment Methods — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">Saved payment methods</h1>
+
+    {% if not stripe_configured %}
+    <p class="alert alert-info">
+        Adding a new card requires payment-gateway credentials that aren't configured in this environment yet.
+        Cash on Delivery remains available at checkout.
+    </p>
+    {% endif %}
+
+    <p id="payment-methods-error" class="hidden text-sm text-red-600"></p>
+
+    <div id="payment-methods-loading" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {% for _ in "12" %}
+        <div class="card flex flex-col gap-2 p-4">
+            <div class="skeleton h-4 w-24"></div>
+            <div class="skeleton h-3 w-32"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="payment-methods-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">💳</span>
+        <p class="text-black/50">You haven't saved any payment methods yet.</p>
+    </div>
+
+    <div id="payment-methods-list" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+</div>
+
+<template id="payment-method-card-template">
+    <div class="card flex flex-col gap-2 p-4">
+        <div class="flex items-center justify-between">
+            <span class="card-brand font-semibold capitalize"></span>
+            <div class="default-badges flex gap-1"></div>
+        </div>
+        <span class="card-number text-sm text-black/60"></span>
+        <span class="card-expiry text-sm text-black/40"></span>
+        <div class="mt-2 flex gap-3 text-sm">
+            <button type="button" class="set-default-btn text-brand hover:underline">Set as default</button>
+            <button type="button" class="remove-btn text-red-600 hover:underline">Remove</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/payment_methods.js' %}"></script>
+{% endblock %}

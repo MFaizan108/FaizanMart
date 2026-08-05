@@ -7,6 +7,7 @@ app_name = "reviews_api"
 
 router = DefaultRouter()
 router.register("reviews", api_views.ReviewViewSet, basename="review")
+router.register("questions", api_views.ProductQuestionViewSet, basename="product-question")
 
 urlpatterns = [
     path("wishlist/", api_views.WishlistListView.as_view(), name="wishlist"),

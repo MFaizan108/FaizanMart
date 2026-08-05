@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ store.name }} — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="flex flex-col">
+    <!-- Store banner -->
+    <div class="h-40 w-full bg-black/5 sm:h-56">
+        {% if store.banner %}
+        <img src="{{ store.banner.url }}" alt="" class="h-full w-full object-cover">
+        {% else %}
+        <div class="h-full w-full bg-gradient-to-br from-emerald-700 to-emerald-900"></div>
+        {% endif %}
+    </div>
+
+    <div class="mx-auto -mt-10 flex w-full max-w-7xl flex-col gap-4 px-4">
+        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
+            <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-white shadow-md">
+                {% if store.logo %}
+                <img src="{{ store.logo.url }}" alt="{{ store.name }}" class="h-full w-full object-cover">
+                {% else %}
+                <span class="text-2xl font-bold text-brand">{{ store.name|slice:":1" }}</span>
+                {% endif %}
+            </div>
+            <div class="flex flex-col gap-1">
+                <h1 class="text-2xl font-bold">{{ store.name }}</h1>
+                <div class="flex flex-wrap items-center gap-3 text-sm text-black/50">
+                    <span>{{ product_count }} product{{ product_count|pluralize }}</span>
+                    {% if store_review_count %}
+                    <span>·</span>
+                    <span class="text-amber-500">★ {{ store_avg_rating|floatformat:1 }}</span>
+                    <span>({{ store_review_count }} review{{ store_review_count|pluralize }})</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if user.is_authenticated and user.id != store.owner_id %}
+            <button id="chat-with-seller-btn" type="button" class="btn-secondary sm:ml-auto" data-owner-id="{{ store.owner_id }}" data-store-id="{{ store.id }}">
+                💬 Chat with Seller
+            </button>
+            {% endif %}
+        </div>
+
+        {% if store.description %}
+        <p class="max-w-2xl text-black/70">{{ store.description }}</p>
+        {% endif %}
+
+        {% if store.return_policy or store.shipping_policy %}
+        <div class="flex flex-col gap-4 rounded-xl border border-black/8 bg-black/[.02] p-4 sm:flex-row sm:gap-8">
+            {% if store.shipping_policy %}
+            <div class="flex-1">
+                <h3 class="text-sm font-semibold">Shipping policy</h3>
+                <p class="mt-1 text-sm text-black/60">{{ store.shipping_policy }}</p>
+            </div>
+            {% endif %}
+            {% if store.return_policy %}
+            <div class="flex-1">
+                <h3 class="text-sm font-semibold">Return policy</h3>
+                <p class="mt-1 text-sm text-black/60">{{ store.return_policy }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between pt-4">
+            <h2 class="text-lg font-bold">Products from this seller</h2>
+            <select id="sort-select" class="rounded-md border border-black/15 px-3 py-1.5 text-sm">
+                <option value="">Relevance</option>
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+            </select>
+        </div>
+
+        <div id="product-grid-skeleton" class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            {% for _ in "1234" %}
+            <div class="card flex flex-col gap-2 overflow-hidden">
+                <div class="skeleton aspect-square w-full !rounded-none"></div>
+                <div class="flex flex-col gap-2 p-3">
+                    <div class="skeleton h-3 w-1/3"></div>
+                    <div class="skeleton h-4 w-5/6"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="product-grid" class="hidden fade-in grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"></div>
+        <p id="empty-message" class="hidden fade-in py-16 text-center text-black/50">This seller has no published products yet.</p>
+        <nav id="pagination" class="mb-8 mt-8 flex items-center justify-center gap-4 text-sm"></nav>
+    </div>
+</div>
+
+<template id="product-card-template">
+    <div class="product-card card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
+        <div class="relative aspect-square overflow-hidden bg-black/5">
+            <a class="product-link absolute inset-0 block" href="#">
+                <span class="flex h-full w-full items-center justify-center text-4xl text-black/20">📦</span>
+            </a>
+            <div class="pointer-events-none absolute left-2 top-2 flex flex-col gap-1">
+                <span class="outofstock-badge badge badge-outofstock hidden">Out of stock</span>
+            </div>
+            <button type="button" class="wishlist-btn absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-lg shadow transition hover:scale-105" data-product-id="" data-wishlisted="false" aria-label="Toggle wishlist">
+                <span class="wishlist-icon">🤍</span>
+            </button>
+        </div>
+        <div class="flex flex-1 flex-col gap-1 p-3">
+            <span class="brand-name text-xs text-black/40"></span>
+            <a class="product-link line-clamp-2 text-sm font-medium hover:text-brand" href="#"></a>
+            <div class="flex items-center gap-1 text-xs text-amber-500">
+                <span aria-hidden="true">★</span>
+                <span class="rating-line text-black/50"></span>
+            </div>
+            <div class="mt-auto flex items-baseline gap-2 pt-1">
+                <span class="price font-semibold"></span>
+            </div>
+            <button type="button" class="card-add-to-cart-btn btn-primary mt-2 w-full !py-2 text-xs" data-product-id="">
+                Add to Cart
+            </button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/wishlist.js' %}"></script>
+<script src="{% static 'storefront/js/product_card.js' %}"></script>
+<script>window.STORE_ID = {{ store.id }};</script>
+<script src="{% static 'storefront/js/seller_storefront.js' %}"></script>
+{% endblock %}

@@ -7,9 +7,19 @@
 <div class="flex flex-col gap-6">
     <h1 class="text-2xl font-bold">My orders</h1>
     <p id="placed-banner" class="hidden rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700"></p>
-    <p id="orders-loading" class="text-black/50">Loading orders...</p>
+    <div id="orders-loading" class="card flex flex-col divide-y divide-black/10">
+        {% for _ in "123" %}
+        <div class="flex items-center justify-between gap-4 px-4 py-4">
+            <div class="flex flex-col gap-2">
+                <div class="skeleton h-4 w-32"></div>
+                <div class="skeleton h-3 w-24"></div>
+            </div>
+            <div class="skeleton h-4 w-20"></div>
+        </div>
+        {% endfor %}
+    </div>
 
-    <div id="orders-empty" class="hidden flex-col items-center gap-3 py-16 text-center">
+    <div id="orders-empty" class="hidden fade-in flex-col items-center gap-3 py-16 text-center">
         <span class="text-5xl">📦</span>
         <p class="text-black/50">No orders yet.</p>
         <a href="{% url 'storefront:product_list' %}" class="btn-primary mt-2">Browse products</a>

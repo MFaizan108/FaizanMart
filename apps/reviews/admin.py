@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Review, ReviewImage, WishlistItem
+from .models import ProductQuestion, Review, ReviewImage, WishlistItem
 
 
 class ReviewImageInline(admin.TabularInline):
@@ -20,3 +20,9 @@ class ReviewAdmin(admin.ModelAdmin):
 class WishlistItemAdmin(admin.ModelAdmin):
     list_display = ["customer", "product", "created_at"]
     search_fields = ["customer__email", "product__name"]
+
+
+@admin.register(ProductQuestion)
+class ProductQuestionAdmin(admin.ModelAdmin):
+    list_display = ["product", "customer", "answered_at", "created_at"]
+    search_fields = ["product__name", "customer__email"]

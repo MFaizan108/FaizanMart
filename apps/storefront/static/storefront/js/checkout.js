@@ -113,7 +113,7 @@
     if (!selectedAddressId) return;
     Storefront.hideError(errorEl);
     placeOrderBtn.disabled = true;
-    placeOrderBtn.textContent = "Placing order...";
+    placeOrderBtn.innerHTML = '<span class="spinner"></span> Placing order...';
     try {
       const payload = {
         shipping_address_id: selectedAddressId,

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Review, ReviewImage, WishlistItem
+from .models import ProductQuestion, Review, ReviewImage, WishlistItem
 
 
 class ReviewImageSerializer(serializers.ModelSerializer):
@@ -11,6 +11,7 @@ class ReviewImageSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     customer_email = serializers.EmailField(source="customer.email", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
     images = ReviewImageSerializer(many=True, read_only=True)
 
     class Meta:
@@ -18,6 +19,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "product",
+            "product_name",
             "customer_email",
             "rating",
             "title",
@@ -41,6 +43,23 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class VendorReplySerializer(serializers.Serializer):
     reply = serializers.CharField()
+
+
+class ProductQuestionSerializer(serializers.ModelSerializer):
+    customer_email = serializers.EmailField(source="customer.email", read_only=True)
+    answered_by_email = serializers.EmailField(source="answered_by.email", read_only=True)
+
+    class Meta:
+        model = ProductQuestion
+        fields = [
+            "id", "product", "customer_email", "question",
+            "answer", "answered_by_email", "answered_at", "created_at",
+        ]
+        read_only_fields = ["id", "customer_email", "answer", "answered_by_email", "answered_at", "created_at"]
+
+
+class AnswerQuestionSerializer(serializers.Serializer):
+    answer = serializers.CharField()
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):

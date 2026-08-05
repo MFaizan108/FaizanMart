@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, F, Sum
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.catalog.models import Brand, Category, Product
 from apps.inventory.models import Stock
@@ -9,6 +10,7 @@ from apps.orders.models import Order
 from apps.payments import services as payments_services
 from apps.reviews.models import Review, WishlistItem
 from apps.support.models import FAQ
+from apps.vendors.models import Store
 
 
 RECENTLY_VIEWED_SESSION_KEY = "recently_viewed_product_ids"
@@ -254,6 +256,83 @@ def wallet(request):
 @login_required
 def addresses(request):
     return render(request, "storefront/addresses.html")
+
+
+@login_required
+def payment_methods(request):
+    return render(request, "storefront/payment_methods.html", {
+        "stripe_configured": bool(settings.STRIPE_PUBLISHABLE_KEY),
+    })
+
+
+@login_required
+def my_reviews(request):
+    return render(request, "storefront/my_reviews.html")
+
+
+@login_required
+def returns(request):
+    return render(request, "storefront/returns.html")
+
+
+@login_required
+def messages_list(request):
+    return render(request, "storefront/messages_list.html")
+
+
+@login_required
+def message_thread(request, pk):
+    return render(request, "storefront/message_thread.html", {"conversation_id": pk})
+
+
+def seller_storefront(request, slug):
+    store = get_object_or_404(Store, slug=slug, status=Store.Status.APPROVED)
+    product_count = Product.objects.filter(store=store, status=Product.Status.PUBLISHED).count()
+    rating = Review.objects.filter(product__store=store).aggregate(avg=Avg("rating"), count=Count("id"))
+    return render(request, "storefront/seller_storefront.html", {
+        "store": store,
+        "product_count": product_count,
+        "store_avg_rating": rating["avg"] or 0,
+        "store_review_count": rating["count"],
+    })
+
+
+def sell_with_us(request):
+    if request.user.is_authenticated and hasattr(request.user, "store"):
+        return redirect("storefront:seller_dashboard")
+    return render(request, "storefront/sell_with_us.html")
+
+
+@login_required
+def seller_dashboard(request):
+    if not hasattr(request.user, "store"):
+        return render(request, "storefront/seller_no_store.html")
+    return render(request, "storefront/seller_dashboard.html", {"store": request.user.store})
+
+
+@login_required
+def seller_products(request):
+    if not hasattr(request.user, "store"):
+        return render(request, "storefront/seller_no_store.html")
+    categories = Category.objects.filter(is_active=True)
+    brands = Brand.objects.filter(is_active=True)
+    return render(request, "storefront/seller_products.html", {
+        "store": request.user.store, "categories": categories, "brands": brands,
+    })
+
+
+@login_required
+def seller_orders(request):
+    if not hasattr(request.user, "store"):
+        return render(request, "storefront/seller_no_store.html")
+    return render(request, "storefront/seller_orders.html", {"store": request.user.store})
+
+
+@login_required
+def seller_store_settings(request):
+    if not hasattr(request.user, "store"):
+        return render(request, "storefront/seller_no_store.html")
+    return render(request, "storefront/seller_store_settings.html", {"store": request.user.store})
 
 
 def help_center(request):

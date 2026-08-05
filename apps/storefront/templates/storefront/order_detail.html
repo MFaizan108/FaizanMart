@@ -5,9 +5,16 @@
 
 {% block content %}
 <div id="order-root" class="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-8" data-order-id="{{ order_id }}">
-    <p id="order-loading" class="text-center text-black/50">Loading order...</p>
+    <div id="order-loading" class="flex flex-col gap-6">
+        <div class="flex items-center justify-between">
+            <div class="skeleton h-7 w-40"></div>
+            <div class="skeleton h-6 w-20 rounded-full"></div>
+        </div>
+        <div class="skeleton h-40 w-full"></div>
+        <div class="skeleton h-24 w-full"></div>
+    </div>
     <p id="order-error" class="hidden text-center text-red-600"></p>
-    <div id="order-content" class="hidden flex-col gap-6"></div>
+    <div id="order-content" class="hidden fade-in flex-col gap-6"></div>
 </div>
 
 <template id="order-content-template">
@@ -15,6 +22,7 @@
         <h1 class="order-number text-2xl font-bold"></h1>
         <span class="order-status rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium capitalize text-emerald-700"></span>
     </div>
+    <a class="request-return-link btn-secondary hidden w-fit" href="{% url 'storefront:returns' %}">Request a Return</a>
 
     <section class="rounded-xl border border-black/10 p-4">
         <h2 class="items-heading mb-2 font-semibold"></h2>

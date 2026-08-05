@@ -30,8 +30,16 @@
         <button type="submit" class="btn-primary">Save address</button>
     </form>
 
-    <p id="addresses-loading" class="text-black/50">Loading addresses...</p>
-    <div id="addresses-empty" class="hidden card flex-col items-center gap-2 p-12 text-center">
+    <div id="addresses-loading" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {% for _ in "12" %}
+        <div class="card flex flex-col gap-2 p-4">
+            <div class="skeleton h-4 w-24"></div>
+            <div class="skeleton h-3 w-32"></div>
+            <div class="skeleton h-3 w-full"></div>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="addresses-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
         <span class="text-4xl">📍</span>
         <p class="text-black/50">You haven't saved any addresses yet.</p>
     </div>

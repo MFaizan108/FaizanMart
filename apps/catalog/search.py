@@ -57,7 +57,7 @@ SORT_FIELDS = {
 
 
 def search_products(
-    *, query="", category=None, brand=None, min_price=None, max_price=None,
+    *, query="", category=None, brand=None, store=None, min_price=None, max_price=None,
     min_rating=None, in_stock_only=False, sort=None, page=1, page_size=20,
 ):
     search = ProductDocument.search().filter("term", status="published")
@@ -82,6 +82,8 @@ def search_products(
         search = search.filter("term", category_name__raw=effective_category)
     if effective_brand:
         search = search.filter("term", brand_name__raw=effective_brand)
+    if store is not None:
+        search = search.filter("term", store_id=int(store))
     if min_price is not None:
         search = search.filter("range", price={"gte": float(min_price)})
     if max_price is not None:

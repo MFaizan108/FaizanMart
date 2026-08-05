@@ -48,7 +48,7 @@
             {% endif %}
         </div>
         {% if product.store %}
-        <p class="truncate text-xs text-black/40">Sold by {{ product.store.name }}</p>
+        <a href="{% url 'storefront:seller_storefront' product.store.slug %}" class="truncate text-xs text-black/40 hover:text-brand">Sold by {{ product.store.name }}</a>
         {% endif %}
         <button type="button"
                 class="card-add-to-cart-btn btn-primary mt-2 w-full !py-2 text-xs"

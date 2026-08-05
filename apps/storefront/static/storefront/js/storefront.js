@@ -22,7 +22,7 @@
     const method = (options.method || "GET").toUpperCase();
     const headers = Object.assign({ Accept: "application/json" }, options.headers || {});
 
-    if (options.body) headers["Content-Type"] = "application/json";
+    if (options.body && !(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
     if (UNSAFE_METHODS.has(method)) headers["X-CSRFToken"] = getCsrfToken();
     if (window.CART_TOKEN) headers["X-Cart-Token"] = window.CART_TOKEN;
 

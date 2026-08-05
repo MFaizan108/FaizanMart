@@ -99,6 +99,27 @@
             </a>
 
             {% if user.is_authenticated %}
+            <div class="relative" id="notification-menu">
+                <button type="button" class="btn-icon relative" aria-haspopup="true" aria-expanded="false" aria-label="Notifications">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-6 w-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 9.75a6 6 0 1 1 12 0c0 3.5 1 5.25 1.5 6H4.5c.5-.75 1.5-2.5 1.5-6Z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 18.75a2.25 2.25 0 0 0 4.5 0"/>
+                    </svg>
+                    <span id="notification-badge-count" class="absolute -right-0.5 -top-0.5 hidden h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-white"></span>
+                </button>
+                <div class="notification-panel invisible absolute right-0 top-full z-30 mt-2 w-80 origin-top-right rounded-xl border border-black/10 bg-white opacity-0 shadow-lg transition">
+                    <div class="flex items-center justify-between border-b border-black/5 px-4 py-3">
+                        <span class="text-sm font-semibold">Notifications</span>
+                        <a href="{% url 'storefront:notifications' %}" class="text-xs font-medium text-brand hover:underline">View all</a>
+                    </div>
+                    <div id="notification-dropdown-list" class="flex max-h-80 flex-col divide-y divide-black/5 overflow-y-auto">
+                        <p class="p-4 text-sm text-black/40">Loading...</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if user.is_authenticated %}
             <div class="relative" id="account-menu">
                 <button type="button" class="btn-icon" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-6 w-6">
@@ -113,6 +134,12 @@
                     <a href="{% url 'storefront:addresses' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Addresses</a>
                     <a href="{% url 'storefront:wallet' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Wallet</a>
                     <a href="{% url 'storefront:notifications' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Notifications</a>
+                    <hr class="my-2 border-black/5">
+                    {% if user.store %}
+                    <a href="{% url 'storefront:seller_dashboard' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Seller Dashboard</a>
+                    {% else %}
+                    <a href="{% url 'storefront:sell_with_us' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Sell on FaizanMart</a>
+                    {% endif %}
                     <hr class="my-2 border-black/5">
                     <form method="post" action="{% url 'accounts:logout' %}">
                         {% csrf_token %}
@@ -161,6 +188,11 @@
         <hr class="my-2 border-black/5">
         {% if user.is_authenticated %}
         <a href="{% url 'storefront:account_dashboard' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">My Account</a>
+        {% if user.store %}
+        <a href="{% url 'storefront:seller_dashboard' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Seller Dashboard</a>
+        {% else %}
+        <a href="{% url 'storefront:sell_with_us' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Sell on FaizanMart</a>
+        {% endif %}
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
             <button type="submit" class="w-full rounded-lg px-3 py-2.5 text-left font-medium text-red-600 hover:bg-red-50">Logout</button>
@@ -197,7 +229,7 @@
             <h3 class="mb-1 font-semibold">Customer Service</h3>
             <a href="{% url 'storefront:help' %}" class="text-black/60 hover:text-brand">Help Center</a>
             <a href="{% url 'storefront:help' %}" class="text-black/60 hover:text-brand">Contact Us</a>
-            <a href="{% url 'storefront:order_list' %}" class="text-black/60 hover:text-brand">Returns &amp; Refunds</a>
+            <a href="{% url 'storefront:returns' %}" class="text-black/60 hover:text-brand">Returns &amp; Refunds</a>
             <a href="{% url 'storefront:help' %}" class="text-black/60 hover:text-brand">Shipping Policy</a>
         </div>
         <div class="flex flex-col gap-2 text-sm">
@@ -206,6 +238,7 @@
             <a href="{% url 'storefront:wishlist' %}" class="text-black/60 hover:text-brand">Wishlist</a>
             <a href="{% url 'storefront:order_list' %}" class="text-black/60 hover:text-brand">Track Order</a>
             <a href="{% url 'storefront:addresses' %}" class="text-black/60 hover:text-brand">Addresses</a>
+            <a href="{% url 'storefront:sell_with_us' %}" class="text-black/60 hover:text-brand">Sell on FaizanMart</a>
         </div>
         <div class="flex flex-col gap-2 text-sm">
             <h3 class="mb-1 font-semibold">Categories</h3>
@@ -234,6 +267,7 @@
 <script>
     window.CART_TOKEN = "{{ cart_token }}";
     window.IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    window.CURRENT_USER_ID = {% if user.is_authenticated %}{{ user.id }}{% else %}null{% endif %};
     window.LOGIN_URL = "{% url 'accounts:login' %}";
     window.PRODUCT_LIST_URL = "{% url 'storefront:product_list' %}";
 </script>

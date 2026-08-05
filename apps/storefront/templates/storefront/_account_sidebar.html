@@ -3,6 +3,10 @@
 {% url 'storefront:wishlist' as wishlist_url %}
 {% url 'storefront:addresses' as addresses_url %}
 {% url 'storefront:wallet' as wallet_url %}
+{% url 'storefront:payment_methods' as payment_methods_url %}
+{% url 'storefront:my_reviews' as my_reviews_url %}
+{% url 'storefront:returns' as returns_url %}
+{% url 'storefront:messages_list' as messages_url %}
 {% url 'storefront:notifications' as notifications_url %}
 {% url 'accounts:profile' as profile_url %}
 
@@ -12,6 +16,10 @@
     <a href="{{ wishlist_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == wishlist_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Wishlist</a>
     <a href="{{ addresses_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == addresses_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Addresses</a>
     <a href="{{ wallet_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == wallet_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Wallet</a>
+    <a href="{{ payment_methods_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == payment_methods_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Payment Methods</a>
+    <a href="{{ my_reviews_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == my_reviews_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">My Reviews</a>
+    <a href="{{ returns_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == returns_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Returns &amp; Refunds</a>
+    <a href="{{ messages_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == messages_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Messages</a>
     <a href="{{ notifications_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == notifications_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Notifications</a>
     <a href="{{ profile_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == profile_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Profile &amp; Security</a>
     <form method="post" action="{% url 'accounts:logout' %}" class="mt-2 border-t border-black/8 pt-2">

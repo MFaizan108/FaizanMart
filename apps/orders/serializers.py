@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from apps.accounts.models import Address
 
-from .models import Order, OrderItem, OrderStatusHistory
+from .models import Order, OrderItem, OrderStatusHistory, ReturnRequest
 
 
 def _address_to_fields(address, prefix):
@@ -187,3 +187,20 @@ class TransitionSerializer(serializers.Serializer):
 
 class CancelSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class ReturnRequestSerializer(serializers.ModelSerializer):
+    order_number = serializers.CharField(source="order.order_number", read_only=True)
+    store_name = serializers.CharField(source="order.store.name", read_only=True)
+
+    class Meta:
+        model = ReturnRequest
+        fields = [
+            "id", "order", "order_number", "store_name", "reason", "status", "staff_note", "created_at",
+        ]
+        read_only_fields = ["id", "order_number", "store_name", "status", "staff_note", "created_at"]
+
+
+class ReturnRequestRespondSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=[ReturnRequest.Status.APPROVED, ReturnRequest.Status.REJECTED])
+    staff_note = serializers.CharField(required=False, allow_blank=True, default="")

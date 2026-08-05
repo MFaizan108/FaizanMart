@@ -35,6 +35,16 @@ def add_vendor_reply(review, vendor_user, reply_text):
     return review
 
 
+def answer_question(question, vendor_user, answer_text):
+    if question.product.store.owner_id != vendor_user.id:
+        raise ValueError("You can only answer questions on your own products.")
+    question.answer = answer_text
+    question.answered_by = vendor_user
+    question.answered_at = timezone.now()
+    question.save(update_fields=["answer", "answered_by", "answered_at"])
+    return question
+
+
 def toggle_wishlist(customer, product):
     item = WishlistItem.objects.filter(customer=customer, product=product).first()
     if item:

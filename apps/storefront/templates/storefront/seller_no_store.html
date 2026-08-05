@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Panel — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
+    <span class="text-5xl">🏪</span>
+    <h1 class="text-2xl font-bold">You don't have a seller account yet</h1>
+    <p class="text-black/60">Start selling on FaizanMart — set up your store in a few minutes.</p>
+    <a href="{% url 'storefront:sell_with_us' %}" class="btn-primary">Become a Seller</a>
+</div>
+{% endblock %}

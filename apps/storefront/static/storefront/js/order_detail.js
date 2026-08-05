@@ -15,6 +15,10 @@
     node.querySelector(".order-number").textContent = order.order_number;
     node.querySelector(".order-status").textContent = order.status;
 
+    if (order.status === "delivered") {
+      document.querySelector(".request-return-link").classList.remove("hidden");
+    }
+
     node.querySelector(".items-heading").textContent = "Items from " + order.store_name;
     const itemsList = node.querySelector(".items-list");
     order.items.forEach((item) => {

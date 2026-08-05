@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 lg:flex-row lg:items-start">
+    {% include "storefront/_seller_sidebar.html" %}
+    <div class="min-w-0 flex-1">
+        {% if store.status != "approved" %}
+        <div class="alert {% if store.status == 'pending' %}alert-info{% else %}alert-error{% endif %} mb-6">
+            {% if store.status == "pending" %}
+            Your store is awaiting review. You'll be able to publish products once it's approved.
+            {% elif store.status == "rejected" %}
+            Your store application was rejected{% if store.rejection_reason %}: {{ store.rejection_reason }}{% endif %}.
+            {% elif store.status == "suspended" %}
+            Your store is currently suspended. Contact support for details.
+            {% endif %}
+        </div>
+        {% endif %}
+        {% block seller_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

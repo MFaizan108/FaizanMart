@@ -7,16 +7,30 @@
 <div class="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8">
     <h1 class="text-2xl font-bold">Your Cart</h1>
     <p id="cart-error" class="hidden text-sm text-red-600"></p>
-    <p id="cart-loading" class="text-black/50">Loading cart...</p>
+    <div id="cart-loading" class="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div class="card flex flex-1 flex-col gap-1 p-4">
+            {% for _ in "123" %}
+            <div class="flex items-center gap-4 py-4">
+                <div class="skeleton h-16 w-16 shrink-0"></div>
+                <div class="flex flex-1 flex-col gap-2">
+                    <div class="skeleton h-4 w-2/3"></div>
+                    <div class="skeleton h-3 w-1/3"></div>
+                </div>
+                <div class="skeleton h-8 w-16"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="skeleton h-48 w-full lg:w-72"></div>
+    </div>
 
-    <div id="cart-empty" class="hidden flex-col items-center gap-3 py-16 text-center">
+    <div id="cart-empty" class="hidden fade-in flex-col items-center gap-3 py-16 text-center">
         <span class="text-5xl">🛒</span>
         <p class="text-lg font-medium">Your cart is empty</p>
         <p class="text-sm text-black/50">Looks like you haven't added anything yet. Start exploring our products.</p>
         <a href="{% url 'storefront:product_list' %}" class="btn-primary mt-2">Browse products</a>
     </div>
 
-    <div id="cart-content" class="hidden flex-col gap-8 lg:flex-row lg:items-start">
+    <div id="cart-content" class="hidden fade-in flex-col gap-8 lg:flex-row lg:items-start">
         <div id="cart-groups" class="flex flex-1 flex-col gap-6"></div>
 
         <aside class="flex w-full flex-col gap-4 rounded-xl border border-black/10 p-4 lg:w-72">

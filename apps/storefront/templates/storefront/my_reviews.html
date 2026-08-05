@@ -1,0 +1,65 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}My Reviews — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">My reviews</h1>
+    <p id="reviews-error" class="hidden text-sm text-red-600"></p>
+
+    <div id="reviews-loading" class="flex flex-col gap-4">
+        {% for _ in "123" %}
+        <div class="card flex flex-col gap-2 p-4">
+            <div class="skeleton h-4 w-40"></div>
+            <div class="skeleton h-3 w-24"></div>
+            <div class="skeleton h-3 w-full"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="reviews-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">⭐</span>
+        <p class="text-black/50">You haven't written any reviews yet.</p>
+        <a href="{% url 'storefront:order_list' %}" class="btn-primary mt-2">View your orders</a>
+    </div>
+
+    <div id="reviews-list" class="flex flex-col gap-4"></div>
+</div>
+
+<template id="review-card-template">
+    <div class="card flex flex-col gap-2 p-4">
+        <div class="flex items-center justify-between">
+            <a class="product-link font-medium hover:text-brand" href="#"></a>
+            <span class="review-date text-xs text-black/40"></span>
+        </div>
+        <div class="view-mode flex flex-col gap-1">
+            <div class="star-display text-amber-500"></div>
+            <p class="review-title font-medium"></p>
+            <p class="review-comment text-sm text-black/70"></p>
+            <p class="vendor-reply hidden mt-1 rounded-md bg-black/[.03] p-2 text-xs text-black/60"></p>
+            <div class="mt-2 flex gap-3 text-sm">
+                <button type="button" class="edit-btn text-brand hover:underline">Edit</button>
+                <button type="button" class="delete-btn text-red-600 hover:underline">Delete</button>
+            </div>
+        </div>
+        <form class="edit-mode hidden flex-col gap-2">
+            <div class="star-picker flex gap-1" data-rating="5">
+                {% for i in "12345" %}
+                <button type="button" class="star text-xl text-amber-500" data-value="{{ i }}">★</button>
+                {% endfor %}
+            </div>
+            <input name="title" placeholder="Title (optional)" class="rounded-md border border-black/15 px-3 py-2 text-sm">
+            <textarea name="comment" rows="2" placeholder="Your review" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+            <div class="flex gap-2">
+                <button type="submit" class="btn-primary !py-1.5 text-xs">Save</button>
+                <button type="button" class="cancel-edit-btn btn-secondary !py-1.5 text-xs">Cancel</button>
+            </div>
+        </form>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/my_reviews.js' %}"></script>
+{% endblock %}

@@ -9,8 +9,18 @@
         <h1 class="text-2xl font-bold">Notifications</h1>
         <button id="mark-all-read-btn" type="button" class="btn-secondary">Mark all as read</button>
     </div>
-    <p id="notifications-loading" class="text-black/50">Loading notifications...</p>
-    <div id="notifications-empty" class="hidden card flex-col items-center gap-2 p-12 text-center">
+    <div id="notifications-loading" class="card flex flex-col divide-y divide-black/5">
+        {% for _ in "1234" %}
+        <div class="flex items-start gap-3 p-4">
+            <div class="skeleton mt-1.5 h-2 w-2 shrink-0 rounded-full"></div>
+            <div class="flex flex-1 flex-col gap-2">
+                <div class="skeleton h-4 w-1/2"></div>
+                <div class="skeleton h-3 w-3/4"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="notifications-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
         <span class="text-4xl">🔔</span>
         <p class="text-black/50">No notifications yet.</p>
     </div>

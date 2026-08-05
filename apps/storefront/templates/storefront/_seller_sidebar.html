@@ -1,0 +1,14 @@
+{% url 'storefront:seller_dashboard' as dashboard_url %}
+{% url 'storefront:seller_products' as products_url %}
+{% url 'storefront:seller_orders' as orders_url %}
+{% url 'storefront:seller_store_settings' as store_url %}
+
+<aside class="flex w-full shrink-0 flex-col gap-1 lg:w-56">
+    <p class="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-black/40">Seller Panel</p>
+    <a href="{{ dashboard_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == dashboard_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Dashboard</a>
+    <a href="{{ products_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == products_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">My Products</a>
+    <a href="{{ orders_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == orders_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Orders</a>
+    <a href="{{ store_url }}" class="rounded-md px-3 py-2 text-sm font-medium {% if request.path == store_url %}bg-brand/10 text-brand{% else %}text-black/70 hover:bg-black/5{% endif %}">Store Settings</a>
+    <hr class="my-2 border-black/5">
+    <a href="{% url 'storefront:home' %}" class="rounded-md px-3 py-2 text-sm font-medium text-black/70 hover:bg-black/5">Back to shopping</a>
+</aside>

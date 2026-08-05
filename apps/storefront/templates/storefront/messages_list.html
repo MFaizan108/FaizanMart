@@ -1,0 +1,44 @@
+{% extends "storefront/_account_base.html" %}
+{% load static %}
+
+{% block title %}Messages — FaizanMart{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-col gap-6">
+    <h1 class="text-2xl font-bold">Messages</h1>
+    <p id="conversations-error" class="hidden text-sm text-red-600"></p>
+
+    <div id="conversations-loading" class="flex flex-col gap-3">
+        {% for _ in "123" %}
+        <div class="card flex items-center gap-3 p-4">
+            <div class="skeleton h-10 w-10 rounded-full"></div>
+            <div class="flex flex-1 flex-col gap-2"><div class="skeleton h-4 w-40"></div><div class="skeleton h-3 w-56"></div></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="conversations-empty" class="hidden fade-in card flex-col items-center gap-2 p-12 text-center">
+        <span class="text-4xl">💬</span>
+        <p class="text-black/50">No conversations yet. Start one from a seller's storefront page.</p>
+    </div>
+
+    <div id="conversations-list" class="card flex flex-col divide-y divide-black/10"></div>
+</div>
+
+<template id="conversation-row-template">
+    <a class="conversation-link flex items-center gap-3 p-4 hover:bg-black/[.02]" href="#">
+        <span class="avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand"></span>
+        <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+                <span class="counterpart-name truncate font-medium"></span>
+                <span class="online-dot hidden h-2 w-2 shrink-0 rounded-full bg-emerald-500"></span>
+            </div>
+            <p class="last-message truncate text-sm text-black/50"></p>
+        </div>
+    </a>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/messages_list.js' %}"></script>
+{% endblock %}

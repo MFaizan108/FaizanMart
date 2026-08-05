@@ -7,6 +7,7 @@ app_name = "orders_api"
 
 router = DefaultRouter()
 router.register("orders", api_views.OrderViewSet, basename="order")
+router.register("returns", api_views.ReturnRequestViewSet, basename="return-request")
 
 urlpatterns = [
     path("checkout/", api_views.CheckoutView.as_view(), name="checkout"),

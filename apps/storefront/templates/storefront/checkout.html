@@ -4,14 +4,23 @@
 {% block title %}Checkout — FaizanMart{% endblock %}
 
 {% block content %}
-<p id="checkout-loading" class="mx-auto max-w-2xl px-4 py-16 text-center text-black/50">Loading...</p>
+<div id="checkout-loading" class="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8">
+    <div class="skeleton mx-auto h-6 w-64"></div>
+    <div class="mt-4 grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div class="flex flex-col gap-3 md:col-span-2">
+            <div class="skeleton h-40 w-full"></div>
+            <div class="skeleton h-24 w-full"></div>
+        </div>
+        <div class="skeleton h-56 w-full"></div>
+    </div>
+</div>
 
-<div id="checkout-empty" class="mx-auto hidden max-w-2xl flex-col items-center gap-4 px-4 py-16 text-center">
+<div id="checkout-empty" class="mx-auto hidden fade-in max-w-2xl flex-col items-center gap-4 px-4 py-16 text-center">
     <p class="text-black/50">Your cart is empty.</p>
     <a href="{% url 'storefront:product_list' %}" class="btn-primary">Browse products</a>
 </div>
 
-<div id="checkout-content" class="mx-auto hidden max-w-5xl flex-col gap-8 px-4 py-8">
+<div id="checkout-content" class="mx-auto hidden fade-in max-w-5xl flex-col gap-8 px-4 py-8">
 
     <!-- Step indicator -->
     <ol class="mx-auto flex w-full max-w-lg items-center gap-2 text-xs font-medium text-black/40">
