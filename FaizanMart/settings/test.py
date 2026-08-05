@@ -31,6 +31,13 @@ CHANNEL_LAYERS = {
 # explicitly via `ProductDocument().update(instance)`, which isn't gated by this flag.
 ELASTICSEARCH_DSL_AUTOSYNC = False
 
+# base.py's STORAGES["staticfiles"] is WhiteNoise's CompressedManifestStaticFilesStorage,
+# which requires `collectstatic` to have already run (it looks up hashed filenames in a
+# manifest file) — tests render templates with {% static %} tags but don't care about
+# hashed/compressed production assets, so fall back to the plain storage that serves files
+# directly without needing a manifest at all.
+STORAGES["staticfiles"] = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
+
 # Celery tasks (email sending, cleanup, invoice emails) run synchronously in-process during
 # tests instead of being enqueued to a real broker — otherwise .delay() calls would silently
 # no-op (no worker consuming them in the test process) and things like `mail.outbox`
