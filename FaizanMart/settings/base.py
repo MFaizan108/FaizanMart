@@ -193,6 +193,14 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
+    # Falls back to the local filesystem (Django's own built-in default) whenever
+    # CLOUDINARY_URL isn't set — e.g. CI — so that ANY ImageField/FileField `.url` access
+    # (template <img>, DRF serializer field, etc.) has a working storage backend instead of
+    # raising InvalidStorageError. Without this key at all, Django has no "default" entry
+    # in STORAGES and blows up the first time anything touches a file field's .url.
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
