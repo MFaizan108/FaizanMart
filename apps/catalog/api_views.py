@@ -1,3 +1,6 @@
+import uuid
+
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -218,6 +221,53 @@ class ProductVariantViewSet(VendorScopedChildViewSet):
 class ProductSpecificationViewSet(VendorScopedChildViewSet):
     queryset_model = ProductSpecification
     serializer_class = ProductSpecificationSerializer
+
+
+class ProductVideoUploadView(APIView):
+    """Uploads a seller's product video file and hands back its URL. Kept as a plain
+    upload-and-return-a-url endpoint (no new model field) so Product.video_url — which
+    already also accepts a pasted link — stays the single place a product's video lives."""
+
+    permission_classes = [permissions.IsAuthenticated, IsVendor]
+
+    MAX_SIZE_BYTES = 100 * 1024 * 1024
+    ALLOWED_CONTENT_TYPES = {"video/mp4", "video/webm", "video/ogg", "video/quicktime"}
+
+    def post(self, request):
+        store = getattr(request.user, "store", None)
+        if store is None:
+            raise PermissionDenied("You need an approved store to upload product videos.")
+
+        video = request.FILES.get("video")
+        if video is None:
+            return Response({"detail": "No video file provided."}, status=400)
+        if video.content_type not in self.ALLOWED_CONTENT_TYPES:
+            return Response({"detail": "Unsupported video format. Use MP4, WebM, OGG or MOV."}, status=400)
+        if video.size > self.MAX_SIZE_BYTES:
+            return Response({"detail": "Video is too large (max 100MB)."}, status=400)
+
+        if "cloudinary" in settings.INSTALLED_APPS:
+            import cloudinary.exceptions
+            import cloudinary.uploader
+
+            try:
+                result = cloudinary.uploader.upload(
+                    video,
+                    resource_type="video",
+                    folder="catalog/products/videos",
+                    public_id=f"{store.id}_{uuid.uuid4().hex[:10]}",
+                )
+            except cloudinary.exceptions.Error as exc:
+                return Response({"detail": f"Video upload failed: {exc}"}, status=400)
+            url = result["secure_url"]
+        else:
+            from django.core.files.storage import FileSystemStorage
+
+            fs = FileSystemStorage(location=str(settings.MEDIA_ROOT / "catalog" / "products" / "videos"))
+            filename = fs.save(f"{uuid.uuid4().hex}_{video.name}", video)
+            url = request.build_absolute_uri(settings.MEDIA_URL + "catalog/products/videos/" + filename)
+
+        return Response({"url": url}, status=201)
 
 
 class ProductSearchView(APIView):

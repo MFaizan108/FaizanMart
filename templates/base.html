@@ -116,7 +116,7 @@
                         <span class="text-sm font-semibold">Notifications</span>
                         <a href="{% url 'storefront:notifications' %}" class="text-xs font-medium text-brand hover:underline">View all</a>
                     </div>
-                    <div id="notification-dropdown-list" aria-live="polite" class="flex max-h-80 flex-col divide-y divide-black/5 overflow-y-auto"
+                    <div id="notification-dropdown-list" aria-live="polite" class="flex max-h-80 flex-col divide-y divide-black/5 overflow-y-auto">
                         <p class="p-4 text-sm text-black/40">Loading...</p>
                     </div>
                 </div>
@@ -323,6 +323,29 @@
 <!-- Toast notifications (shared, driven by Storefront.toast() in storefront.js) -->
 <div id="toast-container" class="fixed bottom-4 left-1/2 z-[100] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 sm:bottom-6 sm:left-auto sm:right-6 sm:w-full sm:translate-x-0" aria-live="polite" aria-atomic="true"></div>
 
+<!-- AI shopping assistant chat widget (shared, driven by chatbot.js) -->
+<div id="chatbot-widget" class="fixed bottom-5 right-5 z-[80] flex flex-col items-end gap-3">
+    <div id="chatbot-panel" class="scale-in hidden flex h-[28rem] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl">
+        <div class="flex items-center justify-between bg-brand px-4 py-3 text-white">
+            <div class="flex items-center gap-2">
+                <span aria-hidden="true">🛍️</span>
+                <span class="font-semibold">FaizanMart Assistant</span>
+            </div>
+            <button type="button" id="chatbot-close" class="flex h-7 w-7 items-center justify-center rounded-full text-white/90 transition hover:bg-white/10" aria-label="Close chat">✕</button>
+        </div>
+        <div id="chatbot-messages" class="flex flex-1 flex-col gap-3 overflow-y-auto p-3" aria-live="polite"></div>
+        <form id="chatbot-form" class="flex items-center gap-2 border-t border-black/10 p-2">
+            <label for="chatbot-input" class="sr-only">Ask FaizanMart Assistant</label>
+            <input id="chatbot-input" type="text" autocomplete="off" placeholder="Ask about a product…"
+                   class="flex-1 rounded-full border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand">
+            <button type="submit" class="btn-primary !rounded-full !px-4 !py-2" aria-label="Send">➤</button>
+        </form>
+    </div>
+    <button type="button" id="chatbot-toggle"
+            class="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-2xl text-white shadow-lg transition hover:bg-brand/90"
+            aria-label="Chat with us" aria-expanded="false">💬</button>
+</div>
+
 <script nonce="{{ request.csp_nonce }}">
     window.CART_TOKEN = "{{ cart_token }}";
     window.IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
@@ -335,6 +358,7 @@
 <script src="{% static 'storefront/js/header.js' %}"></script>
 <script src="{% static 'storefront/js/compare.js' %}"></script>
 <script src="{% static 'storefront/js/quick_view.js' %}"></script>
+<script src="{% static 'storefront/js/chatbot.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

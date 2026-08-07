@@ -17,6 +17,36 @@
     <div id="order-content" class="hidden fade-in flex-col gap-6"></div>
 </div>
 
+<!-- Cancel-order modal -->
+<div id="cancel-modal-backdrop" class="invisible fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 opacity-0 transition">
+    <div class="scale-in w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <div class="mb-1 flex items-center gap-2 text-danger">
+            <span class="text-2xl" aria-hidden="true">⚠️</span>
+            <h2 class="text-lg font-semibold">Cancel this order?</h2>
+        </div>
+        <p class="mb-4 text-sm text-black/50">Please tell us why — this helps us improve.</p>
+        <form id="cancel-reason-form" class="mb-3 flex flex-col gap-2">
+            {% for reason in cancel_reasons %}
+            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-black/10 px-3 py-2 text-sm transition hover:border-brand/40 hover:bg-brand/5 has-[:checked]:border-brand has-[:checked]:bg-brand/5">
+                <input type="radio" name="cancel_reason" value="{{ reason }}" class="h-4 w-4 shrink-0 accent-brand">
+                {{ reason }}
+            </label>
+            {% endfor %}
+            <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-black/10 px-3 py-2 text-sm transition hover:border-brand/40 hover:bg-brand/5 has-[:checked]:border-brand has-[:checked]:bg-brand/5">
+                <input type="radio" name="cancel_reason" value="other" class="h-4 w-4 shrink-0 accent-brand">
+                Other
+            </label>
+        </form>
+        <textarea id="cancel-reason-other" placeholder="Tell us more…" rows="3"
+            class="mb-3 hidden w-full rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
+        <p id="cancel-modal-error" class="mb-2 hidden text-sm text-danger"></p>
+        <div class="flex justify-end gap-2">
+            <button type="button" id="cancel-modal-close" class="btn-secondary">Keep order</button>
+            <button type="button" id="cancel-modal-confirm" class="btn-primary !bg-danger !border-danger">Cancel order</button>
+        </div>
+    </div>
+</div>
+
 <template id="order-content-template">
     <div class="flex items-center justify-between">
         <h1 class="order-number text-2xl font-bold"></h1>
@@ -26,7 +56,6 @@
         <a class="request-return-link btn-secondary hidden w-fit" href="{% url 'storefront:returns' %}">Request a Return</a>
         <button type="button" class="cancel-order-btn btn-secondary hidden w-fit !border-danger/30 !text-danger">Cancel Order</button>
     </div>
-    <p id="cancel-error" class="hidden text-sm text-danger"></p>
 
     <section class="rounded-xl border border-black/10 p-4">
         <h2 class="items-heading mb-2 font-semibold"></h2>

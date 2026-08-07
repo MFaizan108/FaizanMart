@@ -14,6 +14,9 @@
     form.classList.toggle("flex");
   });
 
+  Storefront.makeSearchableSelect(form.querySelector('select[name="category"]'));
+  Storefront.makeSearchableSelect(form.querySelector('select[name="brand"]'));
+
   const STATUS_BADGE = {
     published: "badge-new",
     pending_review: "badge-warning",
@@ -121,6 +124,8 @@
     }
   }
 
+  const videoUploadStatus = document.getElementById("video-upload-status");
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     Storefront.hideError(formErrorEl);
@@ -128,6 +133,21 @@
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     try {
+      let videoUrl = formData.get("video_url") || "";
+      const videoFile = form.querySelector('input[name="video_file"]').files[0];
+      if (videoFile) {
+        Storefront.showError(videoUploadStatus, "Uploading video…");
+        videoUploadStatus.classList.remove("text-red-600");
+        const videoData = new FormData();
+        videoData.append("video", videoFile);
+        const uploaded = await Storefront.apiFetch("/catalog/products/upload-video/", {
+          method: "POST",
+          body: videoData,
+        });
+        videoUrl = uploaded.url;
+        Storefront.hideError(videoUploadStatus);
+      }
+
       const product = await Storefront.apiFetch("/catalog/products/", {
         method: "POST",
         body: JSON.stringify({
@@ -138,7 +158,7 @@
           price: formData.get("price"),
           compare_at_price: formData.get("compare_at_price") || null,
           description: formData.get("description") || "",
-          video_url: formData.get("video_url") || "",
+          video_url: videoUrl,
           quantity: formData.get("quantity") || 0,
           status: formData.get("status"),
         }),
@@ -163,6 +183,7 @@
       form.classList.remove("flex");
       load();
     } catch (err) {
+      Storefront.hideError(videoUploadStatus);
       Storefront.showError(formErrorEl, err.message);
     } finally {
       submitBtn.disabled = false;

@@ -14,7 +14,7 @@ from apps.notifications import services as notification_services
 from apps.shipping.rules import calculate_shipping_cost
 
 from .models import Order, OrderItem, OrderStatusHistory
-from .tasks import send_order_confirmation_email_task
+from .tasks import send_order_cancelled_email_task, send_order_confirmation_email_task
 
 ALLOWED_TRANSITIONS = {
     Order.Status.PENDING: {Order.Status.PROCESSING, Order.Status.CANCELLED},
@@ -207,11 +207,15 @@ def transition_status(order, new_status, user=None, note=""):
 
         OrderStatusHistory.objects.create(order=order, status=new_status, note=note, changed_by=user)
 
+        if new_status == Order.Status.CANCELLED:
+            send_order_cancelled_email_task.delay(order.id)
+
     notification_services.notify(
         order.customer,
         title=f"Order {order.order_number} is now {order.get_status_display()}",
         message=note or "",
         notification_type="order_update",
+        link=f"/orders/{order.id}/",
     )
 
     return order

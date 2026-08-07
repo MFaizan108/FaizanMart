@@ -20,4 +20,5 @@ router.register(
 
 urlpatterns = [
     path("products/search/", api_views.ProductSearchView.as_view(), name="product-search"),
+    path("products/upload-video/", api_views.ProductVideoUploadView.as_view(), name="product-video-upload"),
 ] + router.urls

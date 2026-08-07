@@ -300,9 +300,20 @@ def order_list(request):
     return render(request, "storefront/order_list.html")
 
 
+CANCEL_REASONS = [
+    "Ordered by mistake",
+    "Found a better price elsewhere",
+    "Delivery is taking too long",
+    "Changed my mind",
+    "Ordered the wrong item or size",
+    "No longer need the product",
+    "Issue with payment method",
+]
+
+
 @login_required
 def order_detail(request, pk):
-    return render(request, "storefront/order_detail.html", {"order_id": pk})
+    return render(request, "storefront/order_detail.html", {"order_id": pk, "cancel_reasons": CANCEL_REASONS})
 
 
 @login_required

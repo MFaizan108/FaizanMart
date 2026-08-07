@@ -110,11 +110,21 @@
         <aside class="card sticky top-24 flex flex-col gap-4 p-5">
             <h2 class="text-lg font-semibold text-secondary">Order summary</h2>
             <div id="summary-items" class="flex flex-col gap-2 text-sm"></div>
-            <div class="flex justify-between border-t border-black/10 pt-3 font-semibold">
-                <span>Subtotal</span>
-                <span>Rs <span id="summary-subtotal"></span></span>
+            <div class="flex flex-col gap-1 border-t border-black/10 pt-3 text-sm">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>Rs <span id="summary-subtotal"></span></span>
+                </div>
+                <div class="flex justify-between text-black/60">
+                    <span>Delivery charges</span>
+                    <span id="summary-shipping">—</span>
+                </div>
+                <div class="flex justify-between border-t border-black/10 pt-2 font-semibold">
+                    <span>Total</span>
+                    <span>Rs <span id="summary-total"></span></span>
+                </div>
             </div>
-            <p class="text-xs text-black/40">Shipping and any discount are calculated on the server when you place the order.</p>
+            <p id="summary-shipping-note" class="text-xs text-black/40">Select an address to see delivery charges. Any discount is applied on the server when you place the order.</p>
             <p id="checkout-error" class="hidden text-sm text-danger"></p>
             <button id="place-order-btn" type="button" class="btn-primary hidden w-full justify-center">
                 Place order

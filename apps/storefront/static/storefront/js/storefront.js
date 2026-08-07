@@ -99,7 +99,121 @@
     }, 3000);
   }
 
-  window.Storefront = { apiFetch, updateCartBadge, showError, hideError, getCookie, toast, escapeHtml };
+  /* ---- Searchable <select> ----
+   * Turns a plain <select> into a type-to-filter combobox — for long option lists (e.g.
+   * 100+ categories) where scrolling a native dropdown is painful. Keeps the original
+   * <select> in the DOM (visually hidden, still driving form submission via .value); the
+   * "required" attribute moves to the visible text input so native validation still works
+   * on the field the user actually sees. */
+  function makeSearchableSelect(select) {
+    if (!select || select.dataset.searchableInit) return;
+    select.dataset.searchableInit = "true";
+
+    const options = Array.from(select.options).filter((o) => o.value !== "");
+    const placeholder = select.options[0] && select.options[0].value === "" ? select.options[0].textContent : "Select…";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "relative";
+    select.style.cssText = "position:absolute;opacity:0;height:0;width:0;pointer-events:none;";
+    select.tabIndex = -1;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.autocomplete = "off";
+    input.placeholder = placeholder;
+    input.className = select.dataset.inputClass || "w-full rounded-md border border-black/15 px-3 py-2 text-sm";
+    if (select.required) {
+      input.required = true;
+      select.required = false;
+    }
+
+    const panel = document.createElement("div");
+    panel.className = "invisible absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-md border border-black/10 bg-white opacity-0 shadow-lg transition";
+
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.append(select, input, panel);
+
+    let matches = [];
+    let activeIndex = -1;
+
+    function choose(option) {
+      select.value = option.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      input.value = option.textContent;
+      close();
+    }
+
+    function highlight(index) {
+      const rows = Array.from(panel.children);
+      activeIndex = index;
+      rows.forEach((row, i) => row.classList.toggle("bg-brand/5", i === activeIndex));
+      if (rows[activeIndex]) rows[activeIndex].scrollIntoView({ block: "nearest" });
+    }
+
+    function renderOptions() {
+      const term = input.value.trim().toLowerCase();
+      matches = options.filter((o) => o.textContent.toLowerCase().includes(term));
+      panel.innerHTML = "";
+      activeIndex = -1;
+      if (!matches.length) {
+        panel.innerHTML = '<p class="px-3 py-2 text-sm text-black/40">No matches.</p>';
+        return;
+      }
+      matches.forEach((option) => {
+        const row = document.createElement("div");
+        row.className = "cursor-pointer px-3 py-2 text-sm hover:bg-brand/5";
+        row.textContent = option.textContent;
+        row.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          choose(option);
+        });
+        panel.appendChild(row);
+      });
+    }
+
+    function open() {
+      renderOptions();
+      panel.classList.remove("invisible", "opacity-0");
+    }
+    function close() {
+      panel.classList.add("invisible", "opacity-0");
+    }
+
+    input.addEventListener("focus", open);
+    input.addEventListener("input", () => {
+      if (select.value) {
+        select.value = "";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      open();
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (matches.length) highlight((activeIndex + 1) % matches.length);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (matches.length) highlight((activeIndex - 1 + matches.length) % matches.length);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (activeIndex >= 0 && matches[activeIndex]) choose(matches[activeIndex]);
+      } else if (event.key === "Escape") {
+        close();
+      }
+    });
+    document.addEventListener("click", (event) => {
+      if (!wrapper.contains(event.target)) close();
+    });
+
+    if (select.value) {
+      const selected = options.find((o) => o.value === select.value);
+      if (selected) input.value = selected.textContent;
+    }
+  }
+
+  window.Storefront = {
+    apiFetch, updateCartBadge, showError, hideError, getCookie, toast, escapeHtml, makeSearchableSelect,
+  };
 
   /* ---- Button click ripple (design system micro-animation) ---- */
   document.addEventListener("click", (event) => {

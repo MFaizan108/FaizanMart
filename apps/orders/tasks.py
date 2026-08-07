@@ -44,3 +44,37 @@ def send_order_confirmation_email_task(order_id):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[order.customer.email],
     )
+
+
+@shared_task
+def send_order_cancelled_email_task(order_id):
+    """Confirms a cancellation by email — the closest thing to an SMS receipt without a
+    real SMS gateway account configured; runs off the request thread like the other
+    order emails since it's an SMTP round-trip."""
+    from .models import Order
+
+    try:
+        order = Order.objects.select_related("customer").get(pk=order_id)
+    except Order.DoesNotExist:
+        return
+
+    lines = [
+        f"Hi {order.customer.get_short_name()},",
+        "",
+        f"Your order {order.order_number} has been cancelled.",
+    ]
+    if order.cancel_reason:
+        lines.append(f"Reason: {order.cancel_reason}")
+    lines += [
+        "",
+        f"Total: {order.total_amount}",
+        "",
+        "If you didn't request this, please contact our support team.",
+    ]
+
+    send_mail(
+        subject=f"Your FaizanMart order {order.order_number} was cancelled",
+        message="\n".join(lines),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[order.customer.email],
+    )

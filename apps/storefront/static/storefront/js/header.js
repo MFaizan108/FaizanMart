@@ -87,14 +87,39 @@
       items.forEach((n) => {
         const row = document.createElement(n.link ? "a" : "div");
         if (n.link) row.href = n.link;
-        row.className = "flex items-start gap-2 px-4 py-3 text-sm hover:bg-brand/5" + (n.is_read ? "" : " bg-brand/[.03]");
+        if (!n.link) row.className = "cursor-pointer";
+        row.className += " flex items-start gap-2 px-4 py-3 text-sm hover:bg-brand/5" + (n.is_read ? "" : " bg-brand/[.03]");
+        const dot = n.is_read ? "" : '<span class="unread-dot mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand"></span>';
         row.innerHTML = `
-          ${n.is_read ? "" : '<span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand"></span>'}
+          ${dot}
           <span class="flex-1">
             <span class="block font-medium">${Storefront.escapeHtml(n.title)}</span>
             <span class="block text-black/50">${Storefront.escapeHtml(n.message)}</span>
             <span class="block text-xs text-black/30">${timeAgo(n.created_at)}</span>
           </span>`;
+
+        if (!n.is_read) {
+          row.addEventListener(
+            "click",
+            () => {
+              Storefront.apiFetch(`/notifications/${n.id}/mark_read/`, { method: "POST", keepalive: true }).catch(() => {});
+              const unreadDot = row.querySelector(".unread-dot");
+              if (unreadDot) unreadDot.remove();
+              row.classList.remove("bg-brand/[.03]");
+              if (notificationBadge) {
+                const current = parseInt(notificationBadge.textContent, 10) || 0;
+                const next = Math.max(current - 1, 0);
+                if (next > 0) {
+                  notificationBadge.textContent = next > 9 ? "9+" : String(next);
+                } else {
+                  notificationBadge.classList.add("hidden");
+                  notificationBadge.classList.remove("flex");
+                }
+              }
+            },
+            { once: true }
+          );
+        }
         notificationList.appendChild(row);
       });
     } catch (err) {

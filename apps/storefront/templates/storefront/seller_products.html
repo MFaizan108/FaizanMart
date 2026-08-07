@@ -38,8 +38,11 @@
             <p class="mt-1 text-xs text-black/40">First photo is used as the main image.</p>
         </div>
         <div>
-            <label class="mb-1 block text-xs font-medium text-black/60">Video URL <span class="text-black/30">(optional)</span></label>
-            <input name="video_url" type="url" placeholder="https://youtube.com/watch?v=..." class="w-full rounded-md border border-black/15 px-3 py-2 text-sm">
+            <label class="mb-1 block text-xs font-medium text-black/60">Video <span class="text-black/30">(optional)</span></label>
+            <input name="video_url" type="url" placeholder="Paste a video link (YouTube etc.)…" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm">
+            <p class="my-1 text-center text-xs text-black/30">— or —</p>
+            <input name="video_file" type="file" accept="video/*" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm">
+            <p id="video-upload-status" class="mt-1 hidden text-xs text-black/40"></p>
         </div>
         <div>
             <label class="mb-1 block text-xs font-medium text-black/60">Stock quantity</label>
