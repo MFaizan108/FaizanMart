@@ -182,6 +182,10 @@ class SessionTemplateFlowTests(APITestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(User.objects.filter(email="frank@example.com").exists())
 
+        # Login is gated on email verification — simulate having clicked the link before
+        # exercising the rest of the logged-in flow below.
+        User.objects.filter(email="frank@example.com").update(is_email_verified=True)
+
         response = self.client.post(
             reverse("accounts:login"), {"email": "frank@example.com", "password": "S0meStrongPass!"}
         )

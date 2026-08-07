@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Access denied — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
+    <span class="empty-icon">🔒</span>
+    <h1 class="text-2xl font-bold">Access denied</h1>
+    <p class="text-black/60">You don't have permission to view this page.</p>
+    <a href="{% url 'storefront:home' %}" class="btn-primary">Back to home</a>
+</div>
+{% endblock %}

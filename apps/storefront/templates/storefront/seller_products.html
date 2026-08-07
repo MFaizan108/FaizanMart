@@ -32,10 +32,17 @@
             <input name="compare_at_price" type="number" min="0" step="0.01" placeholder="Compare-at price" class="rounded-md border border-black/15 px-3 py-2 text-sm">
         </div>
         <textarea name="description" rows="2" placeholder="Description" class="rounded-md border border-black/15 px-3 py-2 text-sm"></textarea>
-        <select name="status" class="w-fit rounded-md border border-black/15 px-3 py-2 text-sm">
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-        </select>
+        <div>
+            <label class="mb-1 block text-xs font-medium text-black/60">Stock quantity</label>
+            <input name="quantity" type="number" min="0" step="1" placeholder="How many do you have in stock?" class="w-full rounded-md border border-black/15 px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="mb-1 block text-xs font-medium text-black/60">Visibility</label>
+            <select name="status" class="w-fit rounded-md border border-black/15 px-3 py-2 text-sm">
+                <option value="draft">Save as draft (not visible)</option>
+                <option value="published">Submit for review (goes live once approved)</option>
+            </select>
+        </div>
         <p id="product-form-error" class="hidden text-sm text-red-600"></p>
         <button type="submit" class="btn-primary w-fit">Save product</button>
     </form>
@@ -64,6 +71,7 @@
         <div class="flex flex-col gap-1">
             <a class="product-link font-medium hover:text-brand" href="#" target="_blank"></a>
             <span class="product-meta text-xs text-black/40"></span>
+            <p class="rejection-reason hidden text-xs text-danger"></p>
         </div>
         <div class="flex items-center gap-3">
             <span class="status-badge badge capitalize"></span>

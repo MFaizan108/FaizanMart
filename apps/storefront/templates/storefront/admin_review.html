@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Review — FaizanMart{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
+    <div>
+        <h1 class="text-2xl font-bold">Admin review</h1>
+        <p class="text-black/60">Approve or reject seller applications and pending products.</p>
+    </div>
+
+    <section class="flex flex-col gap-3">
+        <h2 class="text-lg font-semibold">Pending sellers</h2>
+        <div id="stores-loading" class="flex flex-col gap-3">
+            {% for _ in "123" %}
+            <div class="card flex items-center justify-between gap-4 p-4">
+                <div class="flex flex-col gap-2"><div class="skeleton h-4 w-40"></div><div class="skeleton h-3 w-24"></div></div>
+                <div class="skeleton h-8 w-32"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="stores-empty" class="hidden fade-in card flex-col items-center gap-2 p-8 text-center">
+            <span class="empty-icon empty-icon-sm">✅</span>
+            <p class="text-sm text-black/50">No pending seller applications.</p>
+        </div>
+        <div id="stores-list" class="flex flex-col gap-3"></div>
+    </section>
+
+    <section class="flex flex-col gap-3">
+        <h2 class="text-lg font-semibold">Pending products</h2>
+        <div id="products-loading" class="flex flex-col gap-3">
+            {% for _ in "123" %}
+            <div class="card flex items-center justify-between gap-4 p-4">
+                <div class="flex flex-col gap-2"><div class="skeleton h-4 w-40"></div><div class="skeleton h-3 w-24"></div></div>
+                <div class="skeleton h-8 w-32"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="products-empty" class="hidden fade-in card flex-col items-center gap-2 p-8 text-center">
+            <span class="empty-icon empty-icon-sm">✅</span>
+            <p class="text-sm text-black/50">No products waiting for review.</p>
+        </div>
+        <div id="products-list" class="flex flex-col gap-3"></div>
+    </section>
+</div>
+
+<template id="store-row-template">
+    <div class="card flex flex-wrap items-center justify-between gap-4 p-4">
+        <div class="flex flex-col gap-1">
+            <span class="store-name font-medium"></span>
+            <span class="store-meta text-xs text-black/40"></span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" class="approve-btn btn-primary !py-1.5 text-xs">Approve</button>
+            <button type="button" class="reject-btn btn-secondary !py-1.5 text-xs">Reject</button>
+        </div>
+    </div>
+</template>
+
+<template id="product-row-template">
+    <div class="card flex flex-wrap items-center justify-between gap-4 p-4">
+        <div class="flex flex-col gap-1">
+            <a class="product-name font-medium hover:text-brand" href="#" target="_blank"></a>
+            <span class="product-meta text-xs text-black/40"></span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" class="approve-btn btn-primary !py-1.5 text-xs">Approve</button>
+            <button type="button" class="reject-btn btn-secondary !py-1.5 text-xs">Reject</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/admin_review.js' %}"></script>
+{% endblock %}

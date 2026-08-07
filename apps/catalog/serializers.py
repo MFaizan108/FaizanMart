@@ -98,6 +98,7 @@ class ProductReadSerializer(serializers.ModelSerializer):
             "meta_title",
             "meta_description",
             "status",
+            "rejection_reason",
             "images",
             "variants",
             "specifications",
@@ -109,6 +110,9 @@ class ProductReadSerializer(serializers.ModelSerializer):
 
 class ProductWriteSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=False)
+    # Not a model field — the view pulls it out of validated_data and hands it to
+    # catalog.services.set_stock_quantity() instead, which writes a Stock row.
+    quantity = serializers.IntegerField(write_only=True, required=False, min_value=0)
 
     class Meta:
         model = Product
@@ -130,4 +134,9 @@ class ProductWriteSerializer(serializers.ModelSerializer):
             "meta_title",
             "meta_description",
             "status",
+            "quantity",
         ]
+
+
+class ProductRejectSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=255)

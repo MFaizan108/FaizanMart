@@ -27,6 +27,11 @@ def register_vendor(
     )
     store = Store.objects.create(owner=user, name=store_name, description=description)
     accounts_services.send_verification_email(user, request, _verify_email_path)
+    notification_services.notify_admins(
+        title="New seller application",
+        message=f"'{store_name}' applied to sell on FaizanMart ({email}).",
+        link="/staff/review/",
+    )
     return user, store
 
 
@@ -40,6 +45,11 @@ def apply_as_seller(user, *, store_name, description=""):
     store = Store.objects.create(owner=user, name=store_name, description=description)
     user.role = User.Role.VENDOR
     user.save(update_fields=["role"])
+    notification_services.notify_admins(
+        title="New seller application",
+        message=f"'{store_name}' applied to sell on FaizanMart ({user.email}).",
+        link="/staff/review/",
+    )
     return store
 
 

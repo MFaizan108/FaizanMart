@@ -6,6 +6,7 @@ class Notification(models.Model):
     class NotificationType(models.TextChoices):
         ORDER_UPDATE = "order_update", "Order Update"
         VENDOR_APPROVAL = "vendor_approval", "Vendor Approval"
+        ADMIN_ALERT = "admin_alert", "Admin Alert"
         GENERAL = "general", "General"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")

@@ -33,4 +33,5 @@ urlpatterns = [
     path("seller/products/", views.seller_products, name="seller_products"),
     path("seller/orders/", views.seller_orders, name="seller_orders"),
     path("seller/store/", views.seller_store_settings, name="seller_store_settings"),
+    path("staff/review/", views.admin_review, name="admin_review"),
 ]

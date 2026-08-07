@@ -1,15 +1,18 @@
 from django.core.cache import cache
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.permissions import IsVendor
+from apps.core.permissions import IsSuperAdmin, IsVendor
 from apps.vendors.models import Store
 
 from . import cache as catalog_cache
 from . import search as search_services
+from . import services as catalog_services
 from .models import Brand, Category, Product, ProductImage, ProductSpecification, ProductVariant, Tag
 from .permissions import IsProductOwnerOrReadOnly, IsSuperAdminOrReadOnly
 from .serializers import (
@@ -17,6 +20,7 @@ from .serializers import (
     CategorySerializer,
     ProductImageSerializer,
     ProductReadSerializer,
+    ProductRejectSerializer,
     ProductSpecificationSerializer,
     ProductVariantSerializer,
     ProductWriteSerializer,
@@ -101,9 +105,24 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You need an approved store to manage products.")
         return store
 
+    def _resolve_status(self, requested_status, fallback):
+        """A non-admin can never put a product straight to PUBLISHED — asking for it means
+        "submit for review" instead. Admins (editing directly, e.g. via Django admin-backed
+        tooling) keep whatever status they ask for."""
+        is_admin = self.request.user.is_authenticated and self.request.user.role == "super_admin"
+        if not is_admin and requested_status == Product.Status.PUBLISHED:
+            return Product.Status.PENDING_REVIEW
+        return requested_status if requested_status is not None else fallback
+
     def perform_create(self, serializer):
         store = self._require_approved_store(self.request.user)
-        serializer.save(store=store)
+        quantity = serializer.validated_data.pop("quantity", None)
+        final_status = self._resolve_status(serializer.validated_data.get("status"), Product.Status.DRAFT)
+        serializer.save(store=store, status=final_status)
+        if quantity is not None:
+            catalog_services.set_stock_quantity(serializer.instance, quantity)
+        if final_status == Product.Status.PENDING_REVIEW:
+            catalog_services.notify_admins_product_pending(serializer.instance)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -118,9 +137,44 @@ class ProductViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+        quantity = serializer.validated_data.pop("quantity", None)
+        was_pending = instance.status == Product.Status.PENDING_REVIEW
+        if "status" in serializer.validated_data:
+            serializer.validated_data["status"] = self._resolve_status(
+                serializer.validated_data["status"], instance.status
+            )
         serializer.save()
+        if quantity is not None:
+            catalog_services.set_stock_quantity(serializer.instance, quantity)
+        if not was_pending and serializer.instance.status == Product.Status.PENDING_REVIEW:
+            catalog_services.notify_admins_product_pending(serializer.instance)
         output = ProductReadSerializer(serializer.instance, context=self.get_serializer_context())
         return Response(output.data)
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated, IsSuperAdmin])
+    def pending(self, request):
+        queryset = Product.objects.filter(status=Product.Status.PENDING_REVIEW).select_related("store")
+        page = self.paginate_queryset(queryset)
+        serializer = ProductReadSerializer(page or queryset, many=True, context=self.get_serializer_context())
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsSuperAdmin])
+    def approve(self, request, pk=None):
+        # Not self.get_object(): the base get_queryset() only exposes PUBLISHED products to
+        # a store-less admin, which would 404 on exactly the pending ones we need to reach.
+        product = get_object_or_404(Product, pk=pk)
+        catalog_services.approve_product(product, request.user)
+        return Response(ProductReadSerializer(product, context=self.get_serializer_context()).data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsSuperAdmin])
+    def reject(self, request, pk=None):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductRejectSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        catalog_services.reject_product(product, request.user, serializer.validated_data["reason"])
+        return Response(ProductReadSerializer(product, context=self.get_serializer_context()).data)
 
     def retrieve(self, request, *args, **kwargs):
         # Only the plain published-product view is cached; a vendor viewing their own

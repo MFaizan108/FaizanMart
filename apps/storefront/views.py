@@ -421,3 +421,13 @@ def help_center(request):
     for faq in faqs:
         categories.setdefault(faq.category or "General", []).append(faq)
     return render(request, "storefront/help.html", {"faq_groups": categories})
+
+
+@login_required
+def admin_review(request):
+    if request.user.role != "super_admin":
+        return render(request, "storefront/403.html", status=403)
+    return render(request, "storefront/admin_review.html", {
+        "pending_store_count": Store.objects.filter(status=Store.Status.PENDING).count(),
+        "pending_product_count": Product.objects.filter(status=Product.Status.PENDING_REVIEW).count(),
+    })

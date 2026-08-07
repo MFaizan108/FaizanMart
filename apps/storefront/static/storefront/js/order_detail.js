@@ -10,13 +10,38 @@
     return "Rs " + Math.round(Number(amount)).toLocaleString("en-PK");
   }
 
+  const CANCELLABLE_STATUSES = ["pending", "processing", "packed"];
+
   function render(order) {
     const node = template.content.cloneNode(true);
     node.querySelector(".order-number").textContent = order.order_number;
     node.querySelector(".order-status").textContent = order.status;
 
     if (order.status === "delivered") {
-      document.querySelector(".request-return-link").classList.remove("hidden");
+      node.querySelector(".request-return-link").classList.remove("hidden");
+    }
+
+    if (CANCELLABLE_STATUSES.includes(order.status)) {
+      const cancelBtn = node.querySelector(".cancel-order-btn");
+      cancelBtn.classList.remove("hidden");
+      cancelBtn.addEventListener("click", async () => {
+        if (!confirm("Cancel this order? This cannot be undone.")) return;
+        const reason = prompt("Reason for cancelling (optional):") || "";
+        const cancelErrorEl = document.getElementById("cancel-error");
+        cancelBtn.disabled = true;
+        try {
+          await Storefront.apiFetch(`/orders/orders/${orderId}/cancel/`, {
+            method: "POST",
+            body: JSON.stringify({ reason }),
+          });
+          Storefront.toast("Order cancelled", "success");
+          window.location.reload();
+        } catch (err) {
+          cancelErrorEl.textContent = err.message;
+          cancelErrorEl.classList.remove("hidden");
+          cancelBtn.disabled = false;
+        }
+      });
     }
 
     node.querySelector(".items-heading").textContent = "Items from " + order.store_name;

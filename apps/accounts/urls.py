@@ -8,6 +8,7 @@ urlpatterns = [
     path("register/", views.register_view, name="register"),
     path("verify-email/<str:uidb64>/<str:token>/", views.verify_email_view, name="verify-email"),
     path("login/", views.login_view, name="login"),
+    path("resend-verification/", views.resend_verification_view, name="resend-verification"),
     path("login/2fa-verify/", views.two_factor_verify_view, name="2fa-verify"),
     path("logout/", views.logout_view, name="logout"),
     path("password-reset/", views.password_reset_request_view, name="password-reset-request"),

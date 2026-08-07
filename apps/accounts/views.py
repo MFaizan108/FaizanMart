@@ -76,6 +76,7 @@ def verify_email_view(request, uidb64, token):
 
 def login_view(request):
     next_url = _safe_next_url(request, request.POST.get("next") or request.GET.get("next"))
+    unverified_email = None
 
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -89,6 +90,12 @@ def login_view(request):
                     request, user=None, email_attempted=email, method="password", success=False
                 )
                 messages.error(request, "Invalid email or password.")
+            elif not user.is_email_verified:
+                services.record_login(
+                    request, user=None, email_attempted=email, method="password", success=False
+                )
+                unverified_email = user.email
+                messages.error(request, "Please verify your email before logging in — check your inbox for the link.")
             elif services.has_two_factor_enabled(user):
                 request.session[SESSION_2FA_PENDING_USER_ID] = user.pk
                 request.session[SESSION_2FA_NEXT_URL] = next_url
@@ -106,7 +113,20 @@ def login_view(request):
                 return redirect(next_url or settings.LOGIN_REDIRECT_URL)
     else:
         form = LoginForm()
-    return render(request, "accounts/login.html", {"form": form, "next": next_url or ""})
+    return render(request, "accounts/login.html", {
+        "form": form, "next": next_url or "", "unverified_email": unverified_email,
+    })
+
+
+def resend_verification_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email", "")
+        user = User.objects.filter(email__iexact=email, is_email_verified=False).first()
+        if user:
+            services.send_verification_email(user, request, _verify_email_path)
+        # Same message either way — doesn't reveal whether that email has an account.
+        messages.success(request, "If that account exists and isn't verified yet, we've sent a new link.")
+    return redirect("accounts:login")
 
 
 def two_factor_verify_view(request):

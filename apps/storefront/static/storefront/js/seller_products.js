@@ -14,6 +14,21 @@
     form.classList.toggle("flex");
   });
 
+  const STATUS_BADGE = {
+    published: "badge-new",
+    pending_review: "badge-warning",
+    rejected: "badge-sale",
+    draft: "badge-outofstock",
+    archived: "badge-outofstock",
+  };
+  const STATUS_LABEL = {
+    published: "Live",
+    pending_review: "Pending review",
+    rejected: "Rejected",
+    draft: "Draft",
+    archived: "Archived",
+  };
+
   function renderRow(product) {
     const node = template.content.cloneNode(true);
     const link = node.querySelector(".product-link");
@@ -22,24 +37,46 @@
     node.querySelector(".product-meta").textContent =
       `SKU ${product.sku} · Rs ${Math.round(product.price).toLocaleString("en-PK")}`;
 
+    if (product.status === "rejected" && product.rejection_reason) {
+      const reasonEl = node.querySelector(".rejection-reason");
+      reasonEl.textContent = "Rejected: " + product.rejection_reason;
+      reasonEl.classList.remove("hidden");
+    }
+
     const badge = node.querySelector(".status-badge");
-    badge.textContent = product.status;
-    badge.classList.add(product.status === "published" ? "badge-new" : "badge-outofstock");
+    badge.textContent = STATUS_LABEL[product.status] || product.status;
+    badge.classList.add(STATUS_BADGE[product.status] || "badge-outofstock");
 
     const toggleStatusBtn = node.querySelector(".toggle-status-btn");
-    const nextStatus = product.status === "published" ? "draft" : "published";
-    toggleStatusBtn.textContent = product.status === "published" ? "Unpublish" : "Publish";
-    toggleStatusBtn.addEventListener("click", async () => {
-      try {
-        await Storefront.apiFetch(`/catalog/products/${product.id}/`, {
-          method: "PATCH",
-          body: JSON.stringify({ status: nextStatus }),
-        });
-        load();
-      } catch (err) {
-        Storefront.showError(errorEl, err.message);
-      }
-    });
+    if (product.status === "published") {
+      toggleStatusBtn.textContent = "Unpublish";
+      toggleStatusBtn.addEventListener("click", async () => {
+        try {
+          await Storefront.apiFetch(`/catalog/products/${product.id}/`, {
+            method: "PATCH",
+            body: JSON.stringify({ status: "draft" }),
+          });
+          load();
+        } catch (err) {
+          Storefront.showError(errorEl, err.message);
+        }
+      });
+    } else if (product.status === "pending_review") {
+      toggleStatusBtn.remove();
+    } else {
+      toggleStatusBtn.textContent = "Submit for review";
+      toggleStatusBtn.addEventListener("click", async () => {
+        try {
+          await Storefront.apiFetch(`/catalog/products/${product.id}/`, {
+            method: "PATCH",
+            body: JSON.stringify({ status: "published" }),
+          });
+          load();
+        } catch (err) {
+          Storefront.showError(errorEl, err.message);
+        }
+      });
+    }
 
     node.querySelector(".delete-btn").addEventListener("click", async () => {
       if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
@@ -92,6 +129,7 @@
           price: formData.get("price"),
           compare_at_price: formData.get("compare_at_price") || null,
           description: formData.get("description") || "",
+          quantity: formData.get("quantity") || 0,
           status: formData.get("status"),
         }),
       });

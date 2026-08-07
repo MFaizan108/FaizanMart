@@ -162,6 +162,9 @@
                     {% else %}
                     <a href="{% url 'storefront:seller_dashboard' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Become a Seller</a>
                     {% endif %}
+                    {% if user.role == "super_admin" %}
+                    <a href="{% url 'storefront:admin_review' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Admin Review</a>
+                    {% endif %}
                     <hr class="my-2 border-black/5">
                     <form method="post" action="{% url 'accounts:logout' %}">
                         {% csrf_token %}
@@ -214,6 +217,9 @@
         <a href="{% url 'storefront:seller_dashboard' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Seller Dashboard</a>
         {% else %}
         <a href="{% url 'storefront:seller_dashboard' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Become a Seller</a>
+        {% endif %}
+        {% if user.role == "super_admin" %}
+        <a href="{% url 'storefront:admin_review' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Admin Review</a>
         {% endif %}
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}

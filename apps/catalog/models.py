@@ -70,7 +70,9 @@ class Product(TimeStampedModel):
 
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
+        PENDING_REVIEW = "pending_review", "Pending Review"
         PUBLISHED = "published", "Published"
+        REJECTED = "rejected", "Rejected"
         ARCHIVED = "archived", "Archived"
 
     store = models.ForeignKey(
@@ -104,6 +106,7 @@ class Product(TimeStampedModel):
     meta_description = models.TextField(blank=True)
 
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT, db_index=True)
+    rejection_reason = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
