@@ -21,7 +21,10 @@ def notify_admins(title, message="", link=""):
 
     admins = list(User.objects.filter(is_superuser=True, is_active=True))
     for admin in admins:
-        notify(admin, title=title, message=message, notification_type=Notification.NotificationType.ADMIN_ALERT, link=link)
+        notify(
+            admin, title=title, message=message,
+            notification_type=Notification.NotificationType.ADMIN_ALERT, link=link,
+        )
 
     admin_emails = [admin.email for admin in admins]
     if admin_emails:

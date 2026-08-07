@@ -37,6 +37,15 @@
     node.querySelector(".product-meta").textContent =
       `SKU ${product.sku} · Rs ${Math.round(product.price).toLocaleString("en-PK")}`;
 
+    if (product.images && product.images.length) {
+      const thumb = node.querySelector(".product-thumb");
+      thumb.textContent = "";
+      const img = document.createElement("img");
+      img.src = product.images[0].image;
+      img.className = "h-full w-full object-cover";
+      thumb.appendChild(img);
+    }
+
     if (product.status === "rejected" && product.rejection_reason) {
       const reasonEl = node.querySelector(".rejection-reason");
       reasonEl.textContent = "Rejected: " + product.rejection_reason;
@@ -119,7 +128,7 @@
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     try {
-      await Storefront.apiFetch("/catalog/products/", {
+      const product = await Storefront.apiFetch("/catalog/products/", {
         method: "POST",
         body: JSON.stringify({
           category: Number(formData.get("category")),
@@ -129,10 +138,26 @@
           price: formData.get("price"),
           compare_at_price: formData.get("compare_at_price") || null,
           description: formData.get("description") || "",
+          video_url: formData.get("video_url") || "",
           quantity: formData.get("quantity") || 0,
           status: formData.get("status"),
         }),
       });
+
+      const images = form.querySelector('input[name="images"]').files;
+      for (let i = 0; i < images.length; i++) {
+        const imageData = new FormData();
+        imageData.append("product", product.id);
+        imageData.append("image", images[i]);
+        imageData.append("is_primary", i === 0 ? "true" : "false");
+        imageData.append("sort_order", String(i));
+        try {
+          await Storefront.apiFetch("/catalog/product-images/", { method: "POST", body: imageData });
+        } catch (err) {
+          Storefront.toast(`Product saved, but "${images[i].name}" failed to upload: ${err.message}`, "error");
+        }
+      }
+
       form.reset();
       form.classList.add("hidden");
       form.classList.remove("flex");
