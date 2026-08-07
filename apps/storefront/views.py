@@ -360,7 +360,10 @@ def seller_storefront(request, slug):
 
 
 def sell_with_us(request):
-    if request.user.is_authenticated and hasattr(request.user, "store"):
+    # Logged-in users always go through the unified /seller/ flow — it shows the seller
+    # dashboard if they already have a store, or the "apply with this account" form if not —
+    # rather than this page's create-a-brand-new-account form.
+    if request.user.is_authenticated:
         return redirect("storefront:seller_dashboard")
     return render(request, "storefront/sell_with_us.html")
 

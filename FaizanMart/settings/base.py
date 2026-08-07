@@ -8,6 +8,7 @@ from pathlib import Path
 
 import environ
 from celery.schedules import crontab
+from csp.constants import NONCE, SELF
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -247,7 +248,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 
 LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "accounts:profile"
+LOGIN_REDIRECT_URL = "storefront:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
 
 
@@ -325,16 +326,23 @@ CSRF_COOKIE_HTTPONLY = True
 # Content-Security-Policy (django-csp). "unsafe-inline" on style-src is needed by the Django
 # admin, DRF's browsable API, and the Swagger UI docs page; script-src stays locked to 'self'
 # plus the specific CDN Swagger UI's assets load from (drf-spectacular's SpectacularSwaggerView).
+#
+# script-src includes the NONCE sentinel so django-csp appends a per-request 'nonce-...' to
+# the header — but ONLY if a template actually renders {{ request.csp_nonce }} somewhere (it's
+# a lazy value, so pages that never reference it get no nonce and no header bloat). The handful
+# of templates with a real inline <script> block (base.html's window.* globals, the Google
+# Sign-In callback, per-page window.STORE_ID) use nonce="{{ request.csp_nonce }}" on that tag —
+# every other inline <script> stays correctly blocked by the browser.
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
-        "default-src": ["'self'"],
-        "img-src": ["'self'", "data:", "https://res.cloudinary.com"],
-        "script-src": ["'self'", "https://cdn.jsdelivr.net"],
-        "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
-        "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
-        "connect-src": ["'self'"],
+        "default-src": [SELF],
+        "img-src": [SELF, "data:", "https://res.cloudinary.com"],
+        "script-src": [SELF, NONCE, "https://cdn.jsdelivr.net"],
+        "style-src": [SELF, "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+        "font-src": [SELF, "https://fonts.gstatic.com", "data:"],
+        "connect-src": [SELF],
         "object-src": ["'none'"],
-        "base-uri": ["'self'"],
+        "base-uri": [SELF],
         "frame-ancestors": ["'none'"],
     }
 }

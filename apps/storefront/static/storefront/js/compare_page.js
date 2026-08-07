@@ -15,9 +15,27 @@
       (opts.header ? "sticky left-0 z-10 bg-page text-left font-semibold text-black/60 " : "bg-white ") +
       "border-b border-black/8 px-4 py-3 align-top " +
       (opts.first ? "w-40 " : "min-w-[220px] ");
-    if (typeof content === "string") td.innerHTML = content;
+    // Plain strings are set via textContent (never innerHTML) so product-supplied text
+    // (name, brand, description, ...) can't inject markup — anything that needs real HTML
+    // structure (links, styled spans) is built as a DOM node by the caller instead.
+    if (typeof content === "string") td.textContent = content;
     else if (content) td.appendChild(content);
     return td;
+  }
+
+  function span(text, className) {
+    const el = document.createElement("span");
+    if (className) el.className = className;
+    el.textContent = text;
+    return el;
+  }
+
+  function link(href, text, className) {
+    const a = document.createElement("a");
+    a.href = href;
+    if (className) a.className = className;
+    a.textContent = text;
+    return a;
   }
 
   function row(label, renderCell, products) {
@@ -77,13 +95,13 @@
         products
       )
     );
-    bodyEl.appendChild(row("Product", (p) => `<a href="/products/${p.id}/" class="font-medium hover:text-brand">${p.name}</a>`, products));
+    bodyEl.appendChild(row("Product", (p) => link("/products/" + p.id + "/", p.name, "font-medium hover:text-brand"), products));
     bodyEl.appendChild(row("Brand", (p) => (p.brand ? p.brand.name : "—"), products));
     bodyEl.appendChild(row("Category", (p) => (p.category ? p.category.name : "—"), products));
-    bodyEl.appendChild(row("Price", (p) => `<span class="font-semibold text-brand">${fmt(p.price)}</span>`, products));
-    bodyEl.appendChild(row("Compare-at price", (p) => (p.compare_at_price ? `<span class="line-through text-black/40">${fmt(p.compare_at_price)}</span>` : "—"), products));
-    bodyEl.appendChild(row("Sold by", (p) => `<a href="/store/${p.store_slug}/" class="hover:text-brand">${p.store_name}</a>`, products));
-    bodyEl.appendChild(row("Description", (p) => `<span class="line-clamp-4 text-black/70">${p.description || "—"}</span>`, products));
+    bodyEl.appendChild(row("Price", (p) => span(fmt(p.price), "font-semibold text-brand"), products));
+    bodyEl.appendChild(row("Compare-at price", (p) => (p.compare_at_price ? span(fmt(p.compare_at_price), "line-through text-black/40") : "—"), products));
+    bodyEl.appendChild(row("Sold by", (p) => link("/store/" + p.store_slug + "/", p.store_name, "hover:text-brand"), products));
+    bodyEl.appendChild(row("Description", (p) => span(p.description || "—", "line-clamp-4 text-black/70"), products));
     bodyEl.appendChild(
       row(
         "",

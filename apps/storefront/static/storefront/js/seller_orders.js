@@ -16,6 +16,17 @@
     refunded: [],
   };
 
+  const STATUS_BADGE = {
+    pending: "badge-warning",
+    processing: "badge-warning",
+    packed: "badge-warning",
+    shipped: "badge-accent",
+    delivered: "badge-new",
+    returned: "badge-outofstock",
+    refunded: "badge-outofstock",
+    cancelled: "badge-sale",
+  };
+
   function fmt(amount) {
     return "Rs " + Math.round(Number(amount)).toLocaleString("en-PK");
   }
@@ -29,6 +40,7 @@
 
     const badge = node.querySelector(".status-badge");
     badge.textContent = order.status;
+    badge.classList.add(STATUS_BADGE[order.status] || "badge-outofstock");
 
     const select = node.querySelector(".next-status-select");
     const applyBtn = node.querySelector(".apply-status-btn");

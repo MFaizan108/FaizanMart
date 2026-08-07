@@ -30,6 +30,19 @@ def register_vendor(
     return user, store
 
 
+def apply_as_seller(user, *, store_name, description=""):
+    """Turns an already-registered (customer) account into a seller by attaching a Store
+    to it directly — no second account, no separate email. Mirrors what register_vendor()
+    does for a brand-new signup (Store starts PENDING, role flips to VENDOR immediately;
+    IsVendor-gated endpoints check role, so this keeps that in sync with store ownership)."""
+    if hasattr(user, "store"):
+        raise ValueError("You already have a store.")
+    store = Store.objects.create(owner=user, name=store_name, description=description)
+    user.role = User.Role.VENDOR
+    user.save(update_fields=["role"])
+    return store
+
+
 def approve_store(store, admin_user):
     store.status = Store.Status.APPROVED
     store.approved_at = timezone.now()

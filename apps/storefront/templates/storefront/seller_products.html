@@ -75,6 +75,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>window.STORE_ID = {{ store.id }};</script>
+<script nonce="{{ request.csp_nonce }}">window.STORE_ID = {{ store.id }};</script>
 <script src="{% static 'storefront/js/seller_products.js' %}"></script>
 {% endblock %}

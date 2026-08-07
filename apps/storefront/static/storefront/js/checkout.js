@@ -156,7 +156,7 @@
       cart.items.forEach((item) => {
         const row = document.createElement("div");
         row.className = "flex justify-between";
-        row.innerHTML = `<span>${item.product.name} &times; ${item.quantity}</span><span>Rs ${Math.round(item.line_total).toLocaleString("en-PK")}</span>`;
+        row.innerHTML = `<span>${Storefront.escapeHtml(item.product.name)} &times; ${item.quantity}</span><span>Rs ${Math.round(item.line_total).toLocaleString("en-PK")}</span>`;
         summaryItems.appendChild(row);
       });
       summarySubtotal.textContent = Math.round(cart.subtotal).toLocaleString("en-PK");

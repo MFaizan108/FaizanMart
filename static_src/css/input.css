@@ -41,7 +41,7 @@ form p label {
   color: rgb(0 0 0 / 0.6);
 }
 
-form input:not([type="hidden"]),
+form input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]),
 form select,
 form textarea {
   width: 100%;
@@ -52,12 +52,20 @@ form textarea {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-form input:focus,
+form input:focus:not([type="radio"]):not([type="checkbox"]),
 form select:focus,
 form textarea:focus {
   outline: none;
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px rgb(37 99 235 / 0.15);
+}
+
+form input[type="radio"],
+form input[type="checkbox"] {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  accent-color: var(--color-brand);
 }
 
 form ul.errorlist {
@@ -166,6 +174,15 @@ form ul.errorlist {
   background-color: rgb(37 99 235 / 0.08);
   color: var(--color-brand);
   transform: scale(1.06);
+}
+.btn-icon.is-listening {
+  background-color: rgb(239 68 68 / 0.1);
+  color: var(--color-danger);
+  animation: mic-pulse 1.4s ease infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(239 68 68 / 0.35); }
+  50% { box-shadow: 0 0 0 6px rgb(239 68 68 / 0); }
 }
 
 /* Click ripple — applied via a tiny JS listener in storefront.js to any

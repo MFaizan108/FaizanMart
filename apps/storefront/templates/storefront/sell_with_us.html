@@ -78,6 +78,17 @@
                 your store will need admin approval before you can publish products.
             </div>
 
+            <div id="sell-existing-account" class="hidden fade-in flex-col gap-3">
+                <div class="alert alert-info">
+                    This email is already registered as a customer account.
+                </div>
+                <p class="text-sm text-black/60">
+                    You can use the same account to become a seller — simply log in and submit
+                    the "Become a Seller" application.
+                </p>
+                <a id="sell-login-btn" href="{% url 'accounts:login' %}?next={% url 'storefront:seller_dashboard' %}" class="btn-primary w-full justify-center">Login &amp; Become Seller</a>
+            </div>
+
             <form id="sell-form" class="flex flex-col gap-3">
                 <div>
                     <label class="mb-1 block text-xs font-medium text-black/60">Store name</label>

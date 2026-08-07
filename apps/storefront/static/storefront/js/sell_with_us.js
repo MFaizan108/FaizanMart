@@ -2,6 +2,7 @@
   const form = document.getElementById("sell-form");
   const errorEl = document.getElementById("sell-error");
   const successEl = document.getElementById("sell-success");
+  const existingEl = document.getElementById("sell-existing-account");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -26,6 +27,12 @@
       form.classList.add("hidden");
       successEl.classList.remove("hidden");
     } catch (err) {
+      if (err.message === "A user with this email already exists.") {
+        form.classList.add("hidden");
+        existingEl.classList.remove("hidden");
+        existingEl.classList.add("flex");
+        return;
+      }
       Storefront.showError(errorEl, err.message);
       submitBtn.disabled = false;
       submitBtn.textContent = "Create seller account";

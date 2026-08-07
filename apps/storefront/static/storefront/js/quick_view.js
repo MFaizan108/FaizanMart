@@ -22,20 +22,21 @@
     try {
       const product = await Storefront.apiFetch(`/catalog/products/${productId}/`);
       const image = product.images && product.images[0] ? product.images[0].image : null;
+      const esc = Storefront.escapeHtml;
       body.innerHTML = `
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div class="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-black/5">
-            ${image ? `<img src="${image}" alt="" class="h-full w-full object-cover">` : '<span class="text-5xl text-black/20">📦</span>'}
+            ${image ? `<img src="${esc(image)}" alt="" class="h-full w-full object-cover">` : '<span class="text-5xl text-black/20">📦</span>'}
           </div>
           <div class="flex flex-col gap-2">
-            ${product.brand ? `<span class="text-xs text-black/40">${product.brand.name}</span>` : ""}
-            <h2 class="text-lg font-bold">${product.name}</h2>
+            ${product.brand ? `<span class="text-xs text-black/40">${esc(product.brand.name)}</span>` : ""}
+            <h2 class="text-lg font-bold">${esc(product.name)}</h2>
             <div class="flex items-baseline gap-2">
               <span class="text-xl font-bold text-brand">${fmt(product.price)}</span>
               ${product.compare_at_price ? `<span class="text-sm text-black/40 line-through">${fmt(product.compare_at_price)}</span>` : ""}
             </div>
-            <p class="text-sm text-black/40">Sold by ${product.store_name}</p>
-            ${product.description ? `<p class="mt-2 line-clamp-4 text-sm text-black/70">${product.description}</p>` : ""}
+            <p class="text-sm text-black/40">Sold by ${esc(product.store_name)}</p>
+            ${product.description ? `<p class="mt-2 line-clamp-4 text-sm text-black/70">${esc(product.description)}</p>` : ""}
             <div class="mt-4 flex gap-2">
               <button type="button" class="btn-primary quick-view-add-btn flex-1" data-product-id="${product.id}">Add to Cart</button>
               <a href="/products/${product.id}/" class="btn-secondary">View Details</a>
@@ -64,7 +65,7 @@
         }
       });
     } catch (err) {
-      body.innerHTML = `<p class="py-12 text-center text-sm text-danger">${err.message}</p>`;
+      body.innerHTML = `<p class="py-12 text-center text-sm text-danger">${Storefront.escapeHtml(err.message)}</p>`;
     }
   }
 

@@ -47,7 +47,7 @@
     const wishlistBtn = node.querySelector(".item-wishlist-btn");
     wishlistBtn.addEventListener("click", async () => {
       if (!window.IS_AUTHENTICATED) {
-        window.location.href = window.LOGIN_URL + "?next=" + encodeURIComponent(window.location.pathname);
+        window.location.href = (window.LOGIN_URL || "/accounts/login/") + "?next=" + encodeURIComponent(window.location.pathname);
         return;
       }
       wishlistBtn.disabled = true;

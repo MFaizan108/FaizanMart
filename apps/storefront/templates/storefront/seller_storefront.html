@@ -133,6 +133,6 @@
 {% block extra_js %}
 <script src="{% static 'storefront/js/wishlist.js' %}"></script>
 <script src="{% static 'storefront/js/product_card.js' %}"></script>
-<script>window.STORE_ID = {{ store.id }};</script>
+<script nonce="{{ request.csp_nonce }}">window.STORE_ID = {{ store.id }};</script>
 <script src="{% static 'storefront/js/seller_storefront.js' %}"></script>
 {% endblock %}

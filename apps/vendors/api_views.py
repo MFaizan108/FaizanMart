@@ -9,6 +9,7 @@ from . import services
 from .models import Store
 from .serializers import (
     PublicStoreSerializer,
+    SellerApplicationSerializer,
     StoreAdminListSerializer,
     StoreRejectSerializer,
     StoreSerializer,
@@ -24,6 +25,25 @@ class VendorRegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         store = serializer.save()
+        return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
+
+
+class SellerApplicationView(generics.CreateAPIView):
+    """An already-logged-in user applying to become a seller with their existing
+    account — as opposed to VendorRegisterView, which creates a brand-new account."""
+
+    serializer_class = SellerApplicationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        if hasattr(request.user, "store"):
+            return Response({"detail": "You already have a store."}, status=400)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            store = services.apply_as_seller(request.user, **serializer.validated_data)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=400)
         return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
 
 

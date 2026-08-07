@@ -185,7 +185,7 @@ class SessionTemplateFlowTests(APITestCase):
         response = self.client.post(
             reverse("accounts:login"), {"email": "frank@example.com", "password": "S0meStrongPass!"}
         )
-        self.assertRedirects(response, reverse("accounts:profile"))
+        self.assertRedirects(response, reverse("storefront:home"))
 
         response = self.client.get(reverse("accounts:profile"))
         self.assertEqual(response.status_code, 200)

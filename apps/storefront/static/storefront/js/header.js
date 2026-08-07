@@ -91,8 +91,8 @@
         row.innerHTML = `
           ${n.is_read ? "" : '<span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand"></span>'}
           <span class="flex-1">
-            <span class="block font-medium">${n.title}</span>
-            <span class="block text-black/50">${n.message}</span>
+            <span class="block font-medium">${Storefront.escapeHtml(n.title)}</span>
+            <span class="block text-black/50">${Storefront.escapeHtml(n.message)}</span>
             <span class="block text-xs text-black/30">${timeAgo(n.created_at)}</span>
           </span>`;
         notificationList.appendChild(row);
@@ -193,7 +193,7 @@
         link.dataset.searchOption = "true";
         link.dataset.query = q;
         link.className = "flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-brand/5";
-        link.innerHTML = `<span class="text-black/30">🕒</span><span class="truncate">${q}</span>`;
+        link.innerHTML = `<span class="text-black/30">🕒</span><span class="truncate">${Storefront.escapeHtml(q)}</span>`;
         suggestionsPanel.appendChild(link);
       });
     }
@@ -210,7 +210,7 @@
           link.href = "/products/" + product.id + "/";
           link.dataset.searchOption = "true";
           link.className = "flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-brand/5";
-          link.innerHTML = `<span class="text-accent">🔥</span><span class="truncate">${product.name}</span>`;
+          link.innerHTML = `<span class="text-accent">🔥</span><span class="truncate">${Storefront.escapeHtml(product.name)}</span>`;
           suggestionsPanel.appendChild(link);
         });
       }
@@ -257,7 +257,7 @@
           link.href = "/products/" + product.id + "/";
           link.dataset.searchOption = "true";
           link.className = "flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-brand/5";
-          link.innerHTML = `<span class="truncate">${product.name}</span><span class="shrink-0 font-medium text-black/60">${fmtPrice(product.price)}</span>`;
+          link.innerHTML = `<span class="truncate">${Storefront.escapeHtml(product.name)}</span><span class="shrink-0 font-medium text-black/60">${fmtPrice(product.price)}</span>`;
           suggestionsPanel.appendChild(link);
         });
       }
@@ -315,6 +315,56 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeSuggestions();
   });
+
+  /* ---- Voice search ---- */
+  const voiceBtn = document.getElementById("voice-search-btn");
+  if (voiceBtn && searchInput) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      voiceBtn.title = "Voice search isn't supported in this browser";
+      voiceBtn.addEventListener("click", () => {
+        if (window.Storefront) Storefront.toast("Voice search isn't supported in this browser.", "error");
+      });
+    } else {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      let listening = false;
+
+      recognition.addEventListener("start", () => {
+        listening = true;
+        voiceBtn.classList.add("is-listening");
+      });
+      recognition.addEventListener("end", () => {
+        listening = false;
+        voiceBtn.classList.remove("is-listening");
+      });
+      recognition.addEventListener("result", (event) => {
+        const transcript = event.results[0][0].transcript;
+        searchInput.value = transcript;
+        saveRecentSearch(transcript);
+        searchForm.submit();
+      });
+      recognition.addEventListener("error", (event) => {
+        if (window.Storefront && event.error !== "aborted" && event.error !== "no-speech") {
+          Storefront.toast("Couldn't hear that — please try again.", "error");
+        }
+      });
+
+      voiceBtn.addEventListener("click", () => {
+        if (listening) {
+          recognition.stop();
+          return;
+        }
+        try {
+          recognition.start();
+        } catch (err) {
+          /* start() throws if a recognition session is already in flight — ignore */
+        }
+      });
+    }
+  }
 
   /* ---- Newsletter subscribe (footer + any homepage promo forms) ---- */
   document.querySelectorAll(".newsletter-form").forEach((newsletterForm) => {

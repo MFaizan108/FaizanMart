@@ -14,7 +14,7 @@
     {% csrf_token %}
     <input type="hidden" name="id_token" id="id_token">
 </form>
-<script>
+<script nonce="{{ request.csp_nonce }}">
     function onGoogleCredential(response) {
         document.getElementById("id_token").value = response.credential;
         document.getElementById("google-form").submit();

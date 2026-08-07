@@ -6,6 +6,7 @@ app_name = "vendors_api"
 
 urlpatterns = [
     path("register/", api_views.VendorRegisterView.as_view(), name="register"),
+    path("apply/", api_views.SellerApplicationView.as_view(), name="apply"),
     path("store/", api_views.MyStoreView.as_view(), name="my-store"),
     path("stores/<slug:slug>/", api_views.PublicStoreDetailView.as_view(), name="public-store-detail"),
     path("store/resubmit/", api_views.StoreResubmitView.as_view(), name="store-resubmit"),

@@ -24,7 +24,7 @@
     order.items.forEach((item) => {
       const row = document.createElement("div");
       row.className = "flex justify-between py-2 text-sm";
-      row.innerHTML = `<span>${item.product_name} &times; ${item.quantity}</span><span>${fmt(item.line_total)}</span>`;
+      row.innerHTML = `<span>${Storefront.escapeHtml(item.product_name)} &times; ${item.quantity}</span><span>${fmt(item.line_total)}</span>`;
       itemsList.appendChild(row);
     });
 
@@ -39,17 +39,18 @@
       totals.appendChild(row);
     });
 
+    const esc = Storefront.escapeHtml;
     node.querySelector(".shipping-address").innerHTML =
-      `${order.shipping_full_name} &middot; ${order.shipping_phone}<br>` +
-      `${order.shipping_address_line}, ${order.shipping_city} ${order.shipping_state}<br>${order.shipping_country}`;
+      `${esc(order.shipping_full_name)} &middot; ${esc(order.shipping_phone)}<br>` +
+      `${esc(order.shipping_address_line)}, ${esc(order.shipping_city)} ${esc(order.shipping_state)}<br>${esc(order.shipping_country)}`;
     node.querySelector(".payment-line").innerHTML =
-      `Payment: <span class="capitalize">${order.payment_method}</span> &middot; <span class="capitalize">${order.payment_status}</span>`;
+      `Payment: <span class="capitalize">${esc(order.payment_method)}</span> &middot; <span class="capitalize">${esc(order.payment_status)}</span>`;
 
     const historyEl = node.querySelector(".status-history");
     order.status_history.forEach((entry) => {
       const row = document.createElement("div");
       row.className = "flex justify-between";
-      row.innerHTML = `<span class="capitalize">${entry.status}</span><span class="text-black/50">${new Date(entry.created_at).toLocaleString()}</span>`;
+      row.innerHTML = `<span class="capitalize">${esc(entry.status)}</span><span class="text-black/50">${new Date(entry.created_at).toLocaleString()}</span>`;
       historyEl.appendChild(row);
     });
 

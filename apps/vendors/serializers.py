@@ -28,6 +28,11 @@ class VendorRegisterSerializer(serializers.Serializer):
         return store
 
 
+class SellerApplicationSerializer(serializers.Serializer):
+    store_name = serializers.CharField(max_length=150)
+    description = serializers.CharField(required=False, allow_blank=True)
+
+
 class StoreSerializer(serializers.ModelSerializer):
     owner_email = serializers.EmailField(source="owner.email", read_only=True)
 

@@ -8,7 +8,7 @@
     event.stopPropagation();
 
     if (!window.IS_AUTHENTICATED) {
-      window.location.href = window.LOGIN_URL + "?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = (window.LOGIN_URL || "/accounts/login/") + "?next=" + encodeURIComponent(window.location.pathname + window.location.search);
       return;
     }
 

@@ -79,7 +79,7 @@
                         </svg>
                         AI
                     </span>
-                    <button type="button" class="btn-icon !h-8 !w-8 shrink-0" aria-label="Voice search" title="Voice search coming soon">
+                    <button type="button" id="voice-search-btn" class="btn-icon !h-8 !w-8 shrink-0" aria-label="Voice search" title="Voice search">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4">
                             <rect x="9" y="2.5" width="6" height="11" rx="3"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3.5m-3 0h6"/>
@@ -116,7 +116,7 @@
                         <span class="text-sm font-semibold">Notifications</span>
                         <a href="{% url 'storefront:notifications' %}" class="text-xs font-medium text-brand hover:underline">View all</a>
                     </div>
-                    <div id="notification-dropdown-list" class="flex max-h-80 flex-col divide-y divide-black/5 overflow-y-auto">
+                    <div id="notification-dropdown-list" aria-live="polite" class="flex max-h-80 flex-col divide-y divide-black/5 overflow-y-auto"
                         <p class="p-4 text-sm text-black/40">Loading...</p>
                     </div>
                 </div>
@@ -160,7 +160,7 @@
                     {% if user.store %}
                     <a href="{% url 'storefront:seller_dashboard' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Seller Dashboard</a>
                     {% else %}
-                    <a href="{% url 'storefront:sell_with_us' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Sell on FaizanMart</a>
+                    <a href="{% url 'storefront:seller_dashboard' %}" class="block rounded-lg px-3 py-2 text-sm hover:bg-brand/5 hover:text-brand">Become a Seller</a>
                     {% endif %}
                     <hr class="my-2 border-black/5">
                     <form method="post" action="{% url 'accounts:logout' %}">
@@ -213,7 +213,7 @@
         {% if user.store %}
         <a href="{% url 'storefront:seller_dashboard' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Seller Dashboard</a>
         {% else %}
-        <a href="{% url 'storefront:sell_with_us' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Sell on FaizanMart</a>
+        <a href="{% url 'storefront:seller_dashboard' %}" class="rounded-lg px-3 py-2.5 font-medium hover:bg-brand/5">Become a Seller</a>
         {% endif %}
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
@@ -315,9 +315,9 @@
 </div>
 
 <!-- Toast notifications (shared, driven by Storefront.toast() in storefront.js) -->
-<div id="toast-container" class="fixed bottom-4 left-1/2 z-[100] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 sm:bottom-6 sm:left-auto sm:right-6 sm:w-full sm:translate-x-0"></div>
+<div id="toast-container" class="fixed bottom-4 left-1/2 z-[100] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 sm:bottom-6 sm:left-auto sm:right-6 sm:w-full sm:translate-x-0" aria-live="polite" aria-atomic="true"></div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
     window.CART_TOKEN = "{{ cart_token }}";
     window.IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
     window.CURRENT_USER_ID = {% if user.is_authenticated %}{{ user.id }}{% else %}null{% endif %};

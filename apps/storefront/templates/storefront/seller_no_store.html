@@ -1,12 +1,40 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Seller Panel — FaizanMart{% endblock %}
+{% block title %}Become a Seller — FaizanMart{% endblock %}
 
 {% block content %}
-<div class="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center">
-    <span class="empty-icon">🏪</span>
-    <h1 class="text-2xl font-bold">You don't have a seller account yet</h1>
-    <p class="text-black/60">Start selling on FaizanMart — set up your store in a few minutes.</p>
-    <a href="{% url 'storefront:sell_with_us' %}" class="btn-primary">Become a Seller</a>
+<div class="mx-auto flex max-w-md flex-col gap-4 px-4 py-16">
+    <div class="flex flex-col items-center gap-2 text-center">
+        <span class="empty-icon">🏪</span>
+        <h1 class="text-2xl font-bold">Become a seller</h1>
+        <p class="text-black/60">
+            You're logged in as <strong>{{ user.email }}</strong>. Submit your store details below —
+            your existing account will get seller access once it's approved.
+        </p>
+    </div>
+
+    <div id="apply-success" class="hidden fade-in alert alert-success">
+        Application submitted! Your store is pending review — you'll be notified once it's approved.
+    </div>
+
+    <form id="apply-form" class="card flex flex-col gap-3 p-6">
+        <div>
+            <label class="mb-1 block text-xs font-medium text-black/60">Store name</label>
+            <input name="store_name" required placeholder="e.g. Faizan Electronics"
+                   class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none">
+        </div>
+        <div>
+            <label class="mb-1 block text-xs font-medium text-black/60">Store description <span class="text-black/30">(optional)</span></label>
+            <textarea name="description" rows="3" placeholder="What do you sell?"
+                      class="w-full rounded-md border border-black/15 px-3 py-2 text-sm focus:border-brand focus:shadow-[0_0_0_3px_rgb(37_99_235_/_0.15)] focus:outline-none"></textarea>
+        </div>
+        <p id="apply-error" class="hidden text-sm text-danger"></p>
+        <button type="submit" class="btn-primary w-full justify-center">Submit Seller Application</button>
+    </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'storefront/js/seller_no_store.js' %}"></script>
 {% endblock %}

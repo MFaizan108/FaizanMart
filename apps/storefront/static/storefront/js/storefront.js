@@ -66,6 +66,17 @@
     el.textContent = "";
   }
 
+  /* ---- HTML escaping ----
+   * For the handful of spots that build markup via template-literal innerHTML (rather than
+   * textContent) but still need to interpolate server/user-supplied text (product names,
+   * descriptions, addresses, ...) — wrap that text in this before it goes into the template
+   * literal, so it can never be interpreted as markup. */
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+    ));
+  }
+
   /* ---- Toast notifications ---- */
   const ICONS = { success: "✓", error: "✕", info: "ℹ" };
 
@@ -75,7 +86,12 @@
     type = type || "info";
     const el = document.createElement("div");
     el.className = "toast toast-" + type;
-    el.innerHTML = `<span>${ICONS[type] || ICONS.info}</span><span>${message}</span>`;
+    el.setAttribute("role", "status");
+    const icon = document.createElement("span");
+    icon.textContent = ICONS[type] || ICONS.info;
+    const text = document.createElement("span");
+    text.textContent = message;
+    el.append(icon, text);
     container.appendChild(el);
     setTimeout(() => {
       el.classList.add("toast-leaving");
@@ -83,7 +99,7 @@
     }, 3000);
   }
 
-  window.Storefront = { apiFetch, updateCartBadge, showError, hideError, getCookie, toast };
+  window.Storefront = { apiFetch, updateCartBadge, showError, hideError, getCookie, toast, escapeHtml };
 
   /* ---- Button click ripple (design system micro-animation) ---- */
   document.addEventListener("click", (event) => {
